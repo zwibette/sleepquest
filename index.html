@@ -81,7 +81,6 @@ button{
 
 <h1>🌙 Sleep Quest</h1>
 
-<!-- AVATARS -->
 <div class="card">
 <div class="avatar" id="avatar">⚡🧢</div>
 <div style="text-align:center">
@@ -92,114 +91,107 @@ button{
 </div>
 </div>
 
-<!-- PROGRESSION -->
 <div class="card">
 <div class="bar"><div class="fill" id="bar"></div></div>
 <p id="status">Progression : 0%</p>
 </div>
 
 <!-- DEVOIRS -->
-<div class="card">
+<div class="card" id="devoirsCard">
 <h3>17h45 — Devoirs</h3>
 <div class="step"><input type="checkbox" onchange="update()"> Devoirs faits</div>
 </div>
 
-<!-- GUITARE TIMER -->
-<div class="card">
-<h3>18h20 — Guitare (timer 5 min)</h3>
-<button onclick="startTimer()">▶ Start 5 min</button>
+<!-- GUITARE -->
+<div class="card" id="guitareCard">
+<h3>18h20 — Guitare</h3>
+<button onclick="startTimer()">▶ 5 min</button>
 <div class="timer" id="timer">05:00</div>
 </div>
 
 <!-- ORGANISATION -->
 <div class="card">
-<h3>18h30 — Organisation maison</h3>
+<h3>18h30 — Organisation</h3>
 <div class="step"><input type="checkbox" onchange="update()"> Ranger ma chambre</div>
-<div class="step"><input type="checkbox" onchange="update()"> Mes affaires rangées dans la maison</div>
-<div class="step"><input type="checkbox" onchange="update()"> Sac d’école prêt</div>
+<div class="step"><input type="checkbox" onchange="update()"> Ranger mes affaires dans la maison</div>
+<div class="step"><input type="checkbox" onchange="update()"> Sac d'école prêt et descendu</div>
 </div>
 
 <!-- ANIMAUX -->
 <div class="card">
 <h3>18h55 — Animaux</h3>
-<div class="step"><input type="checkbox" onchange="update()"> Cochons d’Inde nourris</div>
+<div class="step"><input type="checkbox" onchange="update()"> Je me suis occupé des cochons d’Inde</div>
 </div>
 
 <!-- DÎNER -->
 <div class="card">
-<h3>19h00–19h45 — Dîner calme</h3>
+<h3>19h00 — Dîner calme</h3>
 </div>
 
 <!-- TEMPS CALME -->
 <div class="card">
 <h3>19h45 — Temps calme</h3>
 <p class="small">
-✔ Lecture (Cercle des 17 recommandé)<br>
-✔ Dessin / LEGO<br>
-✔ Musique douce
-<br><br>
-❌ vidéos / jeux rapides
+Lecture (Cercle des 17), dessin, LEGO, musique douce<br>
+❌ vidéos rapides / jeux compétitifs
 </p>
 </div>
 
 <!-- ORL -->
 <div class="card">
-<h3>20h15 — ORL</h3>
+<h3>20h15 — Nez</h3>
 <div class="step"><input type="checkbox" onchange="update()"> Lavage de nez</div>
 <div class="step"><input type="checkbox" onchange="update()"> Spray nasal (20 min après)</div>
 </div>
 
-<!-- ROUTINE CORPORELLE -->
+<!-- ROUTINE -->
 <div class="card">
 <h3>20h45 — Routine du corps</h3>
-
 <div class="step"><input type="checkbox" onchange="update()"> Douche</div>
 <div class="step"><input type="checkbox" onchange="update()"> Brossage dents</div>
-<div class="step"><input type="checkbox" onchange="update()"> Gouttière (dimanche soir obligatoire)</div>
-<div class="step"><input type="checkbox" onchange="update()"> Pyjama</div>
-<div class="step"><input type="checkbox" onchange="update()"> Ranger ma serviette et mes vêtements</div>
 
-<p class="small">Lumière chaude uniquement (jaune/orange)</p>
+<!-- gouttière uniquement dimanche -->
+<div class="step" id="gouttiere">
+<input type="checkbox" onchange="update()"> Gouttière
+</div>
+
+<div class="step"><input type="checkbox" onchange="update()"> Pyjama</div>
+<div class="step"><input type="checkbox" onchange="update()"> Ranger serviette et vêtements</div>
 </div>
 
 <!-- LECTURE -->
 <div class="card">
-<h3>21h15–22h00 — Lecture calme</h3>
+<h3>21h15–22h — Lecture calme</h3>
 <p class="small">
 ✔ Fantastique doux / aventure lente<br>
-✔ Manga calme sans combat intense<br>
-✔ Roman type Cercle des 17<br><br>
-
-❌ horreur / suspense / combat fort
+✔ Manga calme<br>
+❌ horreur / stress / combat intense
 </p>
 </div>
 
 <!-- SOMMEIL -->
 <div class="card">
-<h3>22h00 — Installation sommeil</h3>
+<h3>22h00 — Sommeil</h3>
 <div class="step"><input type="checkbox" onchange="update()"> Lumière éteinte</div>
-<div class="step"><input type="checkbox" onchange="update()"> Sons blancs activés</div>
+<div class="step"><input type="checkbox" onchange="update()"> Bruit blanc</div>
 
 <p class="small">
 “Tu es en sécurité. Tout le monde est là pour toi. Tu peux dormir.”
 </p>
 </div>
 
-<!-- SONS BLANCS -->
+<!-- SONS -->
 <div class="card">
 <h3>🔊 Sons blancs</h3>
-
 <button onclick="sound('rain')">🌧️ Pluie</button>
 <button onclick="sound('waves')">🌊 Vagues</button>
-<button onclick="sound('white')">⚪ White noise</button>
+<button onclick="sound('white')">⚪ Blanc</button>
 <button onclick="stopSound()">Stop</button>
-
-<p class="small">
-À utiliser au coucher ou réveil nocturne
-</p>
 </div>
 
 <script>
+
+const day = new Date().getDay(); // 0 dimanche
 
 let ctx;
 let source;
@@ -219,7 +211,7 @@ function update(){
   document.getElementById("status").innerText="Progression : "+p+"%";
 }
 
-/* TIMER GUITARE */
+/* GUITARE TIMER */
 let t=300;
 let interval;
 
@@ -230,7 +222,7 @@ function startTimer(){
   interval=setInterval(()=>{
     let m=Math.floor(t/60);
     let s=t%60;
-    document.getElementById("timer").innerText =
+    document.getElementById("timer").innerText=
       String(m).padStart(2,'0')+":"+String(s).padStart(2,'0');
 
     t--;
@@ -239,29 +231,18 @@ function startTimer(){
   },1000);
 }
 
-/* SONS PROPRES (plus fiables) */
+/* SONS */
 function sound(type){
   stopSound();
-
   ctx = new (window.AudioContext || window.webkitAudioContext)();
 
-  let bufferSize = ctx.sampleRate * 2;
-  let buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+  let buffer = ctx.createBuffer(1, ctx.sampleRate*2, ctx.sampleRate);
   let data = buffer.getChannelData(0);
 
-  for(let i=0;i<bufferSize;i++){
-
-    if(type==="white"){
-      data[i] = Math.random()*2-1;
-    }
-
-    if(type==="rain"){
-      data[i] = (Math.random()*2-1)*0.6;
-    }
-
-    if(type==="waves"){
-      data[i] = Math.sin(i/800) * 0.5 + (Math.random()*0.2);
-    }
+  for(let i=0;i<data.length;i++){
+    if(type==="white") data[i]=Math.random()*2-1;
+    if(type==="rain") data[i]=(Math.random()*2-1)*0.6;
+    if(type==="waves") data[i]=Math.sin(i/800)+Math.random()*0.2;
   }
 
   source = ctx.createBufferSource();
@@ -276,6 +257,11 @@ function stopSound(){
     source.stop();
     source.disconnect();
   }
+}
+
+/* GOUTTIÈRE UNIQUEMENT DIMANCHE */
+if(day !== 0){
+  document.getElementById("gouttiere").style.display="none";
 }
 
 </script>
