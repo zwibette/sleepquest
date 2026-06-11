@@ -2,322 +2,923 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>Sleep Quest</title>
-<link rel="manifest" href="data:application/json,{&quot;name&quot;:&quot;Sleep Quest&quot;,&quot;short_name&quot;:&quot;Sleep Quest&quot;,&quot;display&quot;:&quot;standalone&quot;,&quot;background_color&quot;:&quot;#0b1026&quot;,&quot;theme_color&quot;:&quot;#0b1026&quot;}">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Sleep Quest">
 <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%230b1026'/><text y='72' x='50' text-anchor='middle' font-size='68'>🌙</text></svg>">
-
 <style>
-body{
-  margin:0;
-  font-family: Arial;
-  background: linear-gradient(#0b1026,#05060f);
-  color:white;
-  padding:16px;
-  min-height:100vh;
-}
+  /* ══════════════════════════════════════════
+     BASE
+  ══════════════════════════════════════════ */
+  @import url('https://fonts.googleapis.com/css2?family=Bangers&family=Noto+Sans+JP:wght@400;700&display=swap');
 
-h1{
-  text-align:center;
-  color:#7cf7ff;
-}
+  :root{
+    --bg1:#0b1026; --bg2:#05060f;
+    --card:#151a33; --card2:#1a2040;
+    --cyan:#7cf7ff; --purple:#a66bff;
+    --pink:#ff6bcb; --yellow:#ffe066;
+    --text:#e8eaf6; --muted:#8892b0;
+    --urgent:#ff4444;
+    --blue-filter: brightness(1) sepia(0.15) hue-rotate(190deg);
+  }
+  body.night-mode{
+    --bg1:#050810; --bg2:#020308;
+    --card:#0d1020; --card2:#111525;
+    --blue-filter: brightness(0.85) sepia(0.3) hue-rotate(200deg) saturate(0.7);
+    filter: var(--blue-filter);
+  }
 
-.card{
-  background:#151a33;
-  padding:12px;
-  margin:10px 0;
-  border-radius:12px;
-}
+  *{ box-sizing:border-box; }
+  body{
+    margin:0;
+    font-family:'Noto Sans JP', Arial, sans-serif;
+    background: linear-gradient(160deg, var(--bg1), var(--bg2));
+    color: var(--text);
+    padding:12px 14px 80px;
+    min-height:100vh;
+  }
 
-.step{
-  display:flex;
-  align-items:center;
-  margin:8px 0;
-}
+  /* ══ TITRE ══ */
+  .main-title{
+    text-align:center;
+    font-family:'Bangers', cursive;
+    font-size:2.4rem;
+    letter-spacing:3px;
+    color: var(--cyan);
+    text-shadow: 0 0 18px #7cf7ff88, 3px 3px 0 #0b1026;
+    margin:8px 0 4px;
+  }
 
-input{
-  transform:scale(1.2);
-  margin-right:10px;
-}
+  /* ══ COUNTDOWN ══ */
+  #countdown-bar{
+    text-align:center;
+    font-size:13px;
+    color: var(--muted);
+    margin-bottom:8px;
+  }
+  #countdown-bar span{
+    color: var(--cyan);
+    font-weight:bold;
+  }
+  #countdown-bar.urgent-time span{ color: var(--urgent); }
 
-.bar{
-  height:14px;
-  background:#222;
-  border-radius:10px;
-  overflow:hidden;
-}
+  /* ══ NIGHT MODE BANNER ══ */
+  #screen-warning{
+    display:none;
+    background: linear-gradient(90deg,#2a1020,#1a0820);
+    border: 1.5px solid var(--pink);
+    border-radius:10px;
+    padding:10px 14px;
+    font-size:13px;
+    color:#ffb3d6;
+    margin-bottom:8px;
+    text-align:center;
+  }
 
-.fill{
-  height:100%;
-  width:0%;
-  background:linear-gradient(90deg,#7cf7ff,#a66bff);
-  transition:0.3s;
-}
+  /* ══ CARDS ══ */
+  .card{
+    background: var(--card);
+    padding:13px 14px;
+    margin:9px 0;
+    border-radius:14px;
+    border-left: 3px solid transparent;
+    transition: border-color 0.3s, box-shadow 0.3s, background 0.3s;
+    position:relative;
+  }
+  .card.active-step{
+    border-left-color: var(--cyan);
+    box-shadow: 0 0 18px #7cf7ff22, inset 0 0 30px #7cf7ff08;
+    background: var(--card2);
+  }
+  .card.active-step .card-title::after{
+    content: ' ← maintenant';
+    font-size:11px;
+    color: var(--cyan);
+    opacity:0.8;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-weight:normal;
+  }
+  .card-title{
+    font-family:'Bangers', cursive;
+    font-size:1.25rem;
+    letter-spacing:1.5px;
+    color: var(--cyan);
+    margin:0 0 10px;
+  }
 
-.avatar{
-  font-size:45px;
-  text-align:center;
-}
+  /* ══ STEPS ══ */
+  .step{
+    display:flex;
+    align-items:center;
+    margin:8px 0;
+    padding:6px 8px;
+    border-radius:8px;
+    transition: background 0.2s;
+    font-size:14px;
+  }
+  .step:has(input:checked){
+    background: #ffffff0a;
+    text-decoration: line-through;
+    color: var(--muted);
+  }
+  .step input[type=checkbox]{
+    width:20px; height:20px;
+    margin-right:10px;
+    flex-shrink:0;
+    accent-color: var(--cyan);
+    cursor:pointer;
+  }
 
-button{
-  background:#7cf7ff;
-  border:none;
-  padding:6px 10px;
-  margin:4px;
-  border-radius:8px;
-  cursor:pointer;
-}
+  /* ══ PROGRESSION ══ */
+  #prog-card{
+    background: var(--card);
+    border-radius:14px;
+    padding:13px 14px;
+    margin:9px 0;
+  }
+  .bar{
+    height:16px;
+    background:#1a1f3a;
+    border-radius:10px;
+    overflow:hidden;
+    border:1px solid #2a2f4a;
+  }
+  .fill{
+    height:100%;
+    width:0%;
+    background:linear-gradient(90deg, var(--cyan), var(--purple));
+    transition: width 0.4s cubic-bezier(.4,0,.2,1);
+    border-radius:10px;
+  }
+  #status-line{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-top:6px;
+    font-size:13px;
+    color: var(--muted);
+  }
+  #status-pct{ color: var(--cyan); font-weight:bold; font-size:15px; }
 
-.small{
-  font-size:12px;
-  opacity:0.75;
-}
+  /* ══ MESSAGE MANGA (bulle BD) ══ */
+  .manga-bubble{
+    display:none;
+    position:relative;
+    background: var(--card2);
+    border:2px solid var(--purple);
+    border-radius:14px;
+    padding:12px 16px;
+    margin:8px 0 4px;
+    font-size:14px;
+    color:#d4b4ff;
+    font-style:italic;
+  }
+  .manga-bubble::before{
+    content:'';
+    position:absolute;
+    top:-14px; left:24px;
+    border:7px solid transparent;
+    border-bottom-color: var(--purple);
+  }
+  .manga-bubble.show{ display:block; }
+  .manga-speaker{
+    font-size:11px;
+    color: var(--purple);
+    font-style:normal;
+    font-weight:bold;
+    margin-bottom:4px;
+  }
 
-.timer{
-  text-align:center;
-  font-size:18px;
-  margin:8px 0;
-}
+  /* ══ PERSONNAGE GUIDE ══ */
+  #guide-card{
+    text-align:center;
+    padding:10px;
+    margin:9px 0;
+  }
+  #guide-emoji{ font-size:52px; transition: all 0.5s; display:inline-block; }
+  #guide-name{ font-size:11px; color:var(--muted); margin-top:2px; }
 
-#bravo{
-  display:none;
-  text-align:center;
-  background: linear-gradient(135deg,#1a2545,#2a1a45);
-  border: 2px solid #a66bff;
-  border-radius:14px;
-  padding:14px;
-  margin:10px 0;
-  font-size:16px;
-  color:#d4b4ff;
-  animation: glow 1.5s ease-in-out infinite alternate;
-}
+  /* ══ STREAK / XP ══ */
+  #stats-card{
+    display:flex;
+    gap:10px;
+    margin:9px 0;
+  }
+  .stat-box{
+    flex:1;
+    background:var(--card);
+    border-radius:12px;
+    padding:10px;
+    text-align:center;
+  }
+  .stat-val{
+    font-family:'Bangers',cursive;
+    font-size:2rem;
+    color:var(--yellow);
+    line-height:1;
+  }
+  .stat-val.streak-val{ color:var(--pink); }
+  .stat-label{ font-size:10px; color:var(--muted); margin-top:2px; }
 
-@keyframes glow {
-  from { box-shadow: 0 0 8px #a66bff44; }
-  to   { box-shadow: 0 0 22px #a66bffaa; }
-}
+  /* ══ BADGES ══ */
+  #badges-card{
+    background:var(--card);
+    border-radius:14px;
+    padding:12px 14px;
+    margin:9px 0;
+  }
+  #badges-title{ font-family:'Bangers',cursive; font-size:1.1rem; color:var(--yellow); margin-bottom:8px; }
+  #badges-grid{ display:flex; flex-wrap:wrap; gap:6px; }
+  .badge{
+    background:#1a1f3a;
+    border-radius:10px;
+    padding:6px 10px;
+    font-size:11px;
+    display:flex; align-items:center; gap:5px;
+    border:1px solid #2a2f4a;
+    opacity:0.35;
+    transition: opacity 0.4s, border-color 0.4s;
+  }
+  .badge.earned{
+    opacity:1;
+    border-color: var(--yellow);
+    box-shadow: 0 0 8px #ffe06644;
+  }
+  .badge-icon{ font-size:18px; }
+
+  /* ══ BRAVO ══ */
+  #bravo{
+    display:none;
+    text-align:center;
+    background: linear-gradient(135deg,#1a2545,#2a1a45);
+    border:2px solid var(--purple);
+    border-radius:14px;
+    padding:16px;
+    margin:10px 0;
+    font-size:15px;
+    color:#d4b4ff;
+    animation: glow 1.5s ease-in-out infinite alternate;
+  }
+  @keyframes glow{
+    from{ box-shadow:0 0 8px #a66bff44; }
+    to{ box-shadow:0 0 26px #a66bffaa; }
+  }
+
+  /* ══ URGENT MODE ══ */
+  #urgent-banner{
+    display:none;
+    background:linear-gradient(90deg,#2a0808,#1a0808);
+    border:2px solid var(--urgent);
+    border-radius:12px;
+    padding:10px 14px;
+    color:#ffaaaa;
+    font-size:13px;
+    text-align:center;
+    margin:9px 0;
+    animation: pulse-red 1.5s ease-in-out infinite alternate;
+  }
+  @keyframes pulse-red{
+    from{box-shadow:0 0 6px #ff444433;}
+    to{box-shadow:0 0 20px #ff444488;}
+  }
+  body.urgent-mode .card:not(.urgent-keep){
+    display:none !important;
+  }
+  body.urgent-mode .card.urgent-keep{
+    border-left-color: var(--urgent);
+    box-shadow: 0 0 14px #ff444422;
+  }
+
+  /* ══ AVATAR ══ */
+  .avatar{ font-size:44px; text-align:center; margin-bottom:6px; }
+  .avatar-btns{ text-align:center; }
+
+  /* ══ BUTTONS ══ */
+  button{
+    background: linear-gradient(135deg,var(--cyan),#5bc8d8);
+    border:none;
+    padding:7px 13px;
+    margin:4px;
+    border-radius:8px;
+    font-weight:bold;
+    font-size:13px;
+    cursor:pointer;
+    color:#0b1026;
+    transition: transform 0.1s, box-shadow 0.1s;
+  }
+  button:active{ transform:scale(0.96); }
+  .btn-danger{ background:linear-gradient(135deg,#ff6b6b,#cc3333); color:white; }
+  .btn-purple{ background:linear-gradient(135deg,var(--purple),#7744cc); color:white; }
+
+  /* ══ TIMER ══ */
+  .timer{ text-align:center; font-size:20px; margin:8px 0; font-family:'Bangers',cursive; letter-spacing:2px; color:var(--cyan); }
+
+  /* ══ SMALL ══ */
+  .small{ font-size:12px; color:var(--muted); margin:6px 0; }
+
+  /* ══ TÂCHE PERSO ══ */
+  #custom-task-form{ display:flex; gap:6px; margin-top:8px; }
+  #custom-task-input{
+    flex:1; padding:7px 10px; border-radius:8px;
+    background:#0d1228; border:1px solid #2a2f4a;
+    color:var(--text); font-size:13px; outline:none;
+  }
+  #custom-task-input:focus{ border-color:var(--cyan); }
+
+  /* ══ ANIMATION ÉTOILES 22h ══ */
+  #sleep-overlay{
+    display:none;
+    position:fixed; inset:0;
+    background:radial-gradient(ellipse at center, #0a0d2a 0%, #000005 100%);
+    z-index:999;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+  }
+  #sleep-overlay.show{ display:flex; }
+  #sleep-msg{
+    font-family:'Bangers',cursive;
+    font-size:2rem;
+    color:var(--cyan);
+    letter-spacing:2px;
+    margin-top:20px;
+    text-shadow: 0 0 20px var(--cyan);
+  }
+  #sleep-sub{ font-size:14px; color:var(--muted); margin-top:10px; max-width:280px; }
+  #close-overlay{ margin-top:24px; }
+  #breath-circle{
+    width:100px; height:100px;
+    border-radius:50%;
+    background: radial-gradient(circle, #7cf7ff44, #7cf7ff11);
+    border:2px solid var(--cyan);
+    animation: breathe 4s ease-in-out infinite;
+    box-shadow:0 0 30px #7cf7ff44;
+  }
+  @keyframes breathe{
+    0%,100%{ transform:scale(1); opacity:0.6; }
+    50%{ transform:scale(1.45); opacity:1; }
+  }
+  .star-canvas{ position:fixed; inset:0; z-index:-1; }
+
+  /* ══ RECORD ══ */
+  #record-line{ font-size:11px; color:var(--muted); margin-top:3px; }
 </style>
 </head>
-
 <body>
 
-<h1>🌙 Sleep Quest</h1>
-
-<!-- AVATAR -->
-<div class="card">
-<div class="avatar" id="avatar">⚡🧢</div>
-<div style="text-align:center">
-<button onclick="setAvatar('⚡🧢')">Ash</button>
-<button onclick="setAvatar('🐉🔥')">Dracaufeu</button>
-<button onclick="setAvatar('🌙👘')">Manga</button>
-<button onclick="setAvatar('🥷🖤')">Ninja</button>
+<!-- OVERLAY SOMMEIL 22H -->
+<div id="sleep-overlay">
+  <canvas class="star-canvas" id="starCanvas"></canvas>
+  <div id="breath-circle"></div>
+  <div id="sleep-msg">🌙 C'est l'heure de dormir</div>
+  <div id="sleep-sub">"Tu es en sécurité, tout le monde est là pour toi, tu peux dormir paisiblement."</div>
+  <button id="close-overlay" onclick="closeOverlay()">Fermer</button>
 </div>
+
+<h1 class="main-title">🌙 Sleep Quest</h1>
+
+<!-- COUNTDOWN 22H -->
+<div id="countdown-bar">Objectif sommeil : <span id="countdown-txt">--:--</span></div>
+
+<!-- AVERTISSEMENT ÉCRANS -->
+<div id="screen-warning">📵 Après 20h, les écrans retardent ton endormissement. Pose le téléphone dès que tu peux !</div>
+
+<!-- MODE URGENT -->
+<div id="urgent-banner">⚠️ Il est tard ! Voici ce qui compte encore — fais le minimum pour dormir vite.</div>
+
+<!-- GUIDE MANGA -->
+<div class="card" id="guide-card">
+  <div id="guide-emoji">😴</div>
+  <div id="guide-name">Ton guide · En attente...</div>
+</div>
+
+<!-- BULLE MANGA -->
+<div class="manga-bubble" id="manga-bubble">
+  <div class="manga-speaker" id="manga-speaker">— Naruto</div>
+  <span id="manga-text">Lance-toi, dattebayo !</span>
+</div>
+
+<!-- STATS : STREAK + XP -->
+<div id="stats-card">
+  <div class="stat-box">
+    <div class="stat-val streak-val" id="streak-val">0</div>
+    <div class="stat-label">🔥 Jours d'affilée</div>
+    <div id="record-line">Record : 0</div>
+  </div>
+  <div class="stat-box">
+    <div class="stat-val" id="xp-val">0</div>
+    <div class="stat-label">⭐ XP total</div>
+  </div>
 </div>
 
 <!-- PROGRESSION -->
-<div class="card">
-<div class="bar"><div class="fill" id="bar"></div></div>
-<p id="status">Progression : 0%</p>
+<div id="prog-card">
+  <div class="bar"><div class="fill" id="bar"></div></div>
+  <div id="status-line">
+    <span id="status-pct">0%</span>
+    <span id="status-txt">Commençons !</span>
+  </div>
 </div>
 
 <!-- BRAVO -->
 <div id="bravo">🌟 Bravo, tu es prêt à passer une bonne nuit ! 🌙✨</div>
 
+<!-- BADGES -->
+<div id="badges-card">
+  <div id="badges-title">🏆 Tes badges</div>
+  <div id="badges-grid"></div>
+</div>
+
+<!-- AVATAR -->
+<div class="card">
+  <div class="avatar" id="avatar">⚡🧢</div>
+  <div class="avatar-btns">
+    <button onclick="setAvatar('⚡🧢')">Ash</button>
+    <button onclick="setAvatar('🐉🔥')">Dracaufeu</button>
+    <button onclick="setAvatar('🌙👘')">Manga</button>
+    <button onclick="setAvatar('🥷🖤')">Ninja</button>
+  </div>
+</div>
+
 <!-- DEVOIRS -->
-<div class="card" id="devoirsCard">
-<h3>17h45 — Devoirs</h3>
-<div class="step"><input type="checkbox" data-key="devoirs" onchange="update()"> Devoirs faits</div>
+<div class="card" id="devoirsCard" data-start="17" data-end="18">
+  <div class="card-title">17h45 — Devoirs</div>
+  <div class="step"><input type="checkbox" data-key="devoirs" onchange="onCheck(this)"> Devoirs faits</div>
 </div>
 
 <!-- GUITARE -->
-<div class="card" id="guitareCard">
-<h3>18h20 — Guitare</h3>
-<button onclick="startTimer()">▶ 5 min</button>
-<div class="timer" id="timer">05:00</div>
+<div class="card" id="guitareCard" data-start="18" data-end="19">
+  <div class="card-title">18h20 — Guitare</div>
+  <button onclick="startTimer()">▶ Lancer 5 min</button>
+  <div class="timer" id="timer">05:00</div>
 </div>
 
 <!-- ORGANISATION -->
-<div class="card">
-<h3>18h30 — Organisation</h3>
-<div class="step"><input type="checkbox" data-key="chambre" onchange="update()"> Ranger ma chambre</div>
-<div class="step"><input type="checkbox" data-key="affaires_maison" onchange="update()"> Ranger mes affaires dans la maison</div>
-<div class="step" id="sacCard">
-<input type="checkbox" data-key="sac" onchange="update()"> Sac d'école prêt et descendu
-</div>
+<div class="card" data-start="18" data-end="19">
+  <div class="card-title">18h30 — Organisation</div>
+  <div class="step"><input type="checkbox" data-key="chambre" onchange="onCheck(this)"> Ranger ma chambre</div>
+  <div class="step"><input type="checkbox" data-key="affaires_maison" onchange="onCheck(this)"> Ranger mes affaires dans la maison</div>
+  <div class="step" id="sacCard">
+    <input type="checkbox" data-key="sac" onchange="onCheck(this)"> Sac d'école prêt et descendu
+  </div>
 </div>
 
 <!-- ANIMAUX -->
-<div class="card">
-<h3>18h55 — Animaux</h3>
-<div class="step"><input type="checkbox" data-key="cochons" onchange="update()"> Je me suis occupé des cochons d'Inde</div>
+<div class="card" data-start="18" data-end="19">
+  <div class="card-title">18h55 — Animaux</div>
+  <div class="step"><input type="checkbox" data-key="cochons" onchange="onCheck(this)"> Je me suis occupé des cochons d'Inde</div>
 </div>
 
 <!-- DÎNER -->
-<div class="card">
-<h3>19h00 — Dîner calme</h3>
+<div class="card" data-start="19" data-end="20">
+  <div class="card-title">19h00 — Dîner calme</div>
+  <div class="small">Pas d'écrans à table 🍽️</div>
 </div>
 
 <!-- TEMPS CALME -->
-<div class="card">
-<h3>19h45 — Temps calme</h3>
-<p class="small">
-Lecture, dessin, LEGO, musique douce<br>
-❌ vidéos rapides / jeux
-</p>
+<div class="card" data-start="19" data-end="20">
+  <div class="card-title">19h45 — Temps calme</div>
+  <div class="small">✔ Lecture, dessin, LEGO, musique douce<br>❌ vidéos rapides / jeux</div>
 </div>
 
 <!-- NEZ -->
-<div class="card">
-<h3>20h15 — Soins nez</h3>
-<div class="step"><input type="checkbox" data-key="lavage_nez" onchange="update()"> Lavage de nez</div>
-<div class="step"><input type="checkbox" data-key="spray" onchange="update()"> Spray nasal (20 min après)</div>
+<div class="card urgent-keep" data-start="20" data-end="21">
+  <div class="card-title">20h15 — Soins nez</div>
+  <div class="step"><input type="checkbox" data-key="lavage_nez" onchange="onCheck(this)"> Lavage de nez</div>
+  <div class="step"><input type="checkbox" data-key="spray" onchange="onCheck(this)"> Spray nasal (20 min après)</div>
 </div>
 
 <!-- ROUTINE -->
-<div class="card">
-<h3>20h45 — Routine du corps</h3>
-<div class="step"><input type="checkbox" data-key="douche" onchange="update()"> Douche</div>
-<div class="step"><input type="checkbox" data-key="dents" onchange="update()"> Brossage dents</div>
-
-<div class="step" id="gouttiere">
-<input type="checkbox" data-key="gouttiere_check" onchange="update()"> Gouttière
-</div>
-
-<div class="step"><input type="checkbox" data-key="pyjama" onchange="update()"> Pyjama</div>
-<div class="step"><input type="checkbox" data-key="serviette" onchange="update()"> Ranger serviette et vêtements</div>
+<div class="card urgent-keep" data-start="20" data-end="21">
+  <div class="card-title">20h45 — Routine du corps</div>
+  <div class="step"><input type="checkbox" data-key="douche" onchange="onCheck(this)"> Douche</div>
+  <div class="step"><input type="checkbox" data-key="dents" onchange="onCheck(this)"> Brossage dents</div>
+  <div class="step" id="gouttiere">
+    <input type="checkbox" data-key="gouttiere_check" onchange="onCheck(this)"> Gouttière
+  </div>
+  <div class="step"><input type="checkbox" data-key="pyjama" onchange="onCheck(this)"> Pyjama</div>
+  <div class="step"><input type="checkbox" data-key="serviette" onchange="onCheck(this)"> Ranger serviette et vêtements</div>
 </div>
 
 <!-- LECTURE -->
-<div class="card">
-<h3>21h15–22h — Lecture calme</h3>
-<p class="small">
-✔ Fantastique doux / manga calme<br>
-❌ horreur / stress / action intense
-</p>
+<div class="card" data-start="21" data-end="22">
+  <div class="card-title">21h15–22h — Lecture calme</div>
+  <div class="small">✔ Fantastique doux / manga calme<br>❌ horreur / stress / action intense</div>
 </div>
 
 <!-- SOMMEIL -->
-<div class="card">
-<h3>22h00 — Sommeil</h3>
-<div class="step"><input type="checkbox" data-key="bruit_blanc" onchange="update()"> Écoute des bruits blancs</div>
-<p class="small">"Tu es en sécurité, tout le monde est là pour toi, tu peux dormir paisiblement."</p>
+<div class="card urgent-keep" data-start="22" data-end="24">
+  <div class="card-title">22h00 — Sommeil</div>
+  <div class="step"><input type="checkbox" data-key="bruit_blanc" onchange="onCheck(this)"> Écoute des bruits blancs</div>
+  <div class="small">"Tu es en sécurité, tout le monde est là pour toi, tu peux dormir paisiblement."</div>
+</div>
+
+<!-- TÂCHES PERSO -->
+<div class="card" id="customCard">
+  <div class="card-title">📝 Tâches du soir (perso)</div>
+  <div id="custom-list"></div>
+  <div id="custom-task-form">
+    <input id="custom-task-input" type="text" placeholder="Ajouter une tâche..." maxlength="60">
+    <button onclick="addCustomTask()">+</button>
+  </div>
 </div>
 
 <script>
+/* ══════════════════════════════════════════
+   CONSTANTES
+══════════════════════════════════════════ */
+const DAY = new Date().getDay();
+const STORAGE_KEY   = "sq_checks_v2";
+const DATE_KEY      = "sq_date";
+const XP_KEY        = "sq_xp";
+const STREAK_KEY    = "sq_streak";
+const LAST_DONE_KEY = "sq_last_done";
+const RECORD_KEY    = "sq_record";
+const CUSTOM_KEY    = "sq_custom";
+const AVATAR_KEY    = "sq_avatar";
 
-const day = new Date().getDay(); // 0 dimanche
+/* ══ BADGES DÉFINIS ══ */
+const BADGES = [
+  { id:"first",   icon:"🌱", label:"Première nuit",  cond: xp => xp >= 1 },
+  { id:"x3",      icon:"🔥", label:"3 jours d'affilée", cond:(xp,s)=>s>=3 },
+  { id:"x7",      icon:"🌟", label:"Semaine parfaite", cond:(xp,s)=>s>=7 },
+  { id:"x14",     icon:"🏆", label:"14 jours !",     cond:(xp,s)=>s>=14 },
+  { id:"xp50",    icon:"⚡", label:"50 XP",          cond: xp => xp >= 50 },
+  { id:"xp100",   icon:"💎", label:"100 XP",         cond: xp => xp >= 100 },
+  { id:"naruto",  icon:"🍥", label:"Dattebayo !",    cond:(xp,s)=>s>=5 },
+  { id:"luffy",   icon:"⚓", label:"Capitaine",      cond: xp => xp >= 30 },
+  { id:"goku",    icon:"🐉", label:"Super Saiyan",   cond:(xp,s)=>s>=10 },
+];
 
-/* ── CLÉS DE STOCKAGE ── */
-const STORAGE_KEY  = "sleepquest_checks";
-const DATE_KEY     = "sleepquest_date";
+/* ══ MESSAGES MANGA PAR SEUIL ══ */
+const MANGA_MSGS = [
+  { pct:0,   speaker:"— Naruto",  text:"La soirée commence ! Dattebayo, lance-toi !" },
+  { pct:25,  speaker:"— Luffy",   text:"Un quart du chemin ! Je vais devenir le roi des pirates… et toi le roi du sommeil !" },
+  { pct:50,  speaker:"— Goku",    text:"Mi-chemin. Je sens ton énergie monter. Continue !" },
+  { pct:75,  speaker:"— Zoro",    text:"Presque là. Aucun grand guerrier n'abandonne à 75%." },
+  { pct:100, speaker:"— Itachi",  text:"Tu as tout accompli. Maintenant repose-toi. Tu le mérites." },
+];
 
-/* Date du jour sous forme YYYY-MM-DD */
+/* ══ GUIDE EMOJI PAR SEUIL ══ */
+function guideEmoji(p){
+  if(p===0)  return ["😴","En veille..."];
+  if(p<25)   return ["😶","Il t'observe..."];
+  if(p<50)   return ["🙂","Il s'éveille..."];
+  if(p<75)   return ["😊","Il est fier de toi !"];
+  if(p<100)  return ["🤩","Presque ! Allez !"];
+  return ["🥳","Mission accomplie !"];
+}
+
+/* ══ STOCKAGE ══ */
 function todayStr(){
-  const d = new Date();
+  const d=new Date();
   return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();
 }
 
-/* Réinitialiser si on a changé de jour */
+function load(k){ try{ return JSON.parse(localStorage.getItem(k)); }catch(e){ return null; } }
+function save(k,v){ localStorage.setItem(k, JSON.stringify(v)); }
+
 function resetIfNewDay(){
   const saved = localStorage.getItem(DATE_KEY);
   if(saved !== todayStr()){
+    // Si hier la soirée était complète → incrémenter streak
+    const lastDone = localStorage.getItem(LAST_DONE_KEY);
+    const yesterday = (() => {
+      const d = new Date();
+      d.setDate(d.getDate()-1);
+      return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();
+    })();
+    let streak = load(STREAK_KEY) || 0;
+    if(lastDone === yesterday){
+      streak++;
+    } else if(lastDone !== todayStr()){
+      streak = 0; // chaîne brisée
+    }
+    let record = load(RECORD_KEY) || 0;
+    if(streak > record) record = streak;
+    save(STREAK_KEY, streak);
+    save(RECORD_KEY, record);
     localStorage.removeItem(STORAGE_KEY);
     localStorage.setItem(DATE_KEY, todayStr());
   }
 }
 
-/* Sauvegarder l'état de toutes les cases */
 function saveState(){
-  const state = {};
-  document.querySelectorAll("input[data-key]").forEach(b=>{
-    state[b.dataset.key] = b.checked;
-  });
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  const state={};
+  document.querySelectorAll("input[data-key]").forEach(b=>{ state[b.dataset.key]=b.checked; });
+  save(STORAGE_KEY, state);
 }
 
-/* Restaurer l'état sauvegardé */
 function restoreState(){
-  const raw = localStorage.getItem(STORAGE_KEY);
-  if(!raw) return;
-  const state = JSON.parse(raw);
+  const state = load(STORAGE_KEY);
+  if(!state) return;
   document.querySelectorAll("input[data-key]").forEach(b=>{
     if(state[b.dataset.key] !== undefined) b.checked = state[b.dataset.key];
   });
 }
 
-/* ── AVATAR ── */
-function setAvatar(a){
-  document.getElementById("avatar").innerText=a;
+/* ══ TÂCHES PERSO ══ */
+let customTasks = load(CUSTOM_KEY) || [];
+
+function renderCustomTasks(){
+  const list = document.getElementById("custom-list");
+  list.innerHTML="";
+  customTasks.forEach((task,i)=>{
+    const div = document.createElement("div");
+    div.className="step";
+    const key = "custom_"+i;
+    const state = load(STORAGE_KEY)||{};
+    div.innerHTML=`<input type="checkbox" data-key="${key}" onchange="onCheck(this)" ${state[key]?"checked":""}> ${task}
+      <span onclick="removeCustomTask(${i})" style="margin-left:auto;cursor:pointer;color:var(--muted);font-size:12px;">✕</span>`;
+    list.appendChild(div);
+  });
 }
 
-/* ── PROGRESSION ── */
+function addCustomTask(){
+  const inp = document.getElementById("custom-task-input");
+  const val = inp.value.trim();
+  if(!val) return;
+  customTasks.push(val);
+  save(CUSTOM_KEY, customTasks);
+  inp.value="";
+  renderCustomTasks();
+  update();
+}
+
+function removeCustomTask(i){
+  customTasks.splice(i,1);
+  save(CUSTOM_KEY, customTasks);
+  renderCustomTasks();
+  update();
+}
+
+/* ══ SON / VIBRATION ══ */
+function playCheckSound(){
+  try{
+    const ac = new (window.AudioContext||window.webkitAudioContext)();
+    const osc = ac.createOscillator();
+    const gain = ac.createGain();
+    osc.connect(gain); gain.connect(ac.destination);
+    osc.frequency.setValueAtTime(880, ac.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(1100, ac.currentTime+0.07);
+    gain.gain.setValueAtTime(0.15, ac.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+0.18);
+    osc.start(); osc.stop(ac.currentTime+0.18);
+  } catch(e){}
+  if(navigator.vibrate) navigator.vibrate(40);
+}
+
+/* ══ PROGRESSION ══ */
+let lastPctBracket = -1;
+
+function onCheck(el){
+  playCheckSound();
+  saveState();
+  update();
+}
+
 function update(){
   saveState();
-  // Compter uniquement les cases visibles
-  let boxes = Array.from(document.querySelectorAll("input[data-key]")).filter(b=>{
-    return b.offsetParent !== null;
-  });
-  let c = boxes.filter(b=>b.checked).length;
-  let p = boxes.length > 0 ? Math.round((c/boxes.length)*100) : 0;
-  document.getElementById("bar").style.width=p+"%";
-  document.getElementById("status").innerText="Progression : "+p+"%";
+  const boxes = Array.from(document.querySelectorAll("input[data-key]")).filter(b=>b.offsetParent!==null);
+  const checked = boxes.filter(b=>b.checked).length;
+  const p = boxes.length>0 ? Math.round((checked/boxes.length)*100) : 0;
 
-  const bravo = document.getElementById("bravo");
-  if(p===100 && boxes.length > 0){
-    bravo.style.display="block";
-  } else {
-    bravo.style.display="none";
+  // Barre
+  document.getElementById("bar").style.width=p+"%";
+  document.getElementById("status-pct").innerText=p+"%";
+
+  // Message d'étape
+  const msgs = [...MANGA_MSGS].reverse();
+  const msg = msgs.find(m=>p>=m.pct);
+  if(msg){
+    const bracket = MANGA_MSGS.indexOf([...MANGA_MSGS].find(m=>m.pct===msg.pct));
+    if(bracket !== lastPctBracket){
+      lastPctBracket = bracket;
+      showMangaBubble(msg.speaker, msg.text);
+    }
+  }
+
+  // Texte status
+  const statusTexts = [
+    [0,"Commençons ! 🌙"],
+    [25,"Bien parti !"],
+    [50,"À mi-chemin !"],
+    [75,"Presque fini !"],
+    [100,"🌟 Parfait !"]
+  ];
+  const st = [...statusTexts].reverse().find(s=>p>=s[0]);
+  document.getElementById("status-txt").innerText = st ? st[1] : "";
+
+  // Guide
+  const [em,nm] = guideEmoji(p);
+  document.getElementById("guide-emoji").innerText = em;
+  document.getElementById("guide-name").innerText = nm;
+
+  // Bravo
+  document.getElementById("bravo").style.display = (p===100 && boxes.length>0) ? "block" : "none";
+
+  // XP & streak si 100%
+  if(p===100 && boxes.length>0){
+    const lastDone = localStorage.getItem(LAST_DONE_KEY);
+    if(lastDone !== todayStr()){
+      localStorage.setItem(LAST_DONE_KEY, todayStr());
+      let xp = load(XP_KEY)||0;
+      xp += 10;
+      save(XP_KEY, xp);
+      // streak
+      const yesterday = (()=>{const d=new Date();d.setDate(d.getDate()-1);return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();})();
+      let streak = load(STREAK_KEY)||0;
+      if(lastDone===yesterday) streak++;
+      else streak=1;
+      let record = load(RECORD_KEY)||0;
+      if(streak>record){ record=streak; save(RECORD_KEY,record); }
+      save(STREAK_KEY, streak);
+      renderStats();
+      checkBadges();
+    }
+  }
+
+  renderStats();
+  checkBadges();
+}
+
+function showMangaBubble(speaker, text){
+  document.getElementById("manga-speaker").innerText = speaker;
+  document.getElementById("manga-text").innerText = text;
+  const b = document.getElementById("manga-bubble");
+  b.classList.remove("show");
+  void b.offsetWidth;
+  b.classList.add("show");
+}
+
+/* ══ STATS ══ */
+function renderStats(){
+  const xp = load(XP_KEY)||0;
+  const streak = load(STREAK_KEY)||0;
+  const record = load(RECORD_KEY)||0;
+  document.getElementById("xp-val").innerText = xp;
+  document.getElementById("streak-val").innerText = streak+"🔥";
+  document.getElementById("record-line").innerText = "Record : "+record+" jours";
+}
+
+/* ══ BADGES ══ */
+function checkBadges(){
+  const xp = load(XP_KEY)||0;
+  const streak = load(STREAK_KEY)||0;
+  const grid = document.getElementById("badges-grid");
+  grid.innerHTML="";
+  BADGES.forEach(b=>{
+    const earned = b.cond(xp,streak);
+    const div = document.createElement("div");
+    div.className="badge"+(earned?" earned":"");
+    div.innerHTML=`<span class="badge-icon">${b.icon}</span><span>${b.label}</span>`;
+    grid.appendChild(div);
+  });
+}
+
+/* ══ SURBRILLANCE ÉTAPE COURANTE ══ */
+function highlightCurrentStep(){
+  const h = new Date().getHours();
+  document.querySelectorAll(".card[data-start]").forEach(card=>{
+    const s = parseInt(card.dataset.start);
+    const e = parseInt(card.dataset.end);
+    if(h>=s && h<e) card.classList.add("active-step");
+    else card.classList.remove("active-step");
+  });
+}
+
+/* ══ COUNTDOWN 22H ══ */
+function updateCountdown(){
+  const now = new Date();
+  const target = new Date();
+  target.setHours(22,0,0,0);
+  if(now >= target){ document.getElementById("countdown-txt").innerText="Dors bien 🌙"; return; }
+  const diff = Math.floor((target-now)/1000);
+  const h = Math.floor(diff/3600);
+  const m = Math.floor((diff%3600)/60);
+  const s = diff%60;
+  const txt = h>0 ? `${h}h ${String(m).padStart(2,'0')}min` : `${m}min ${String(s).padStart(2,'0')}s`;
+  document.getElementById("countdown-txt").innerText = txt;
+  const bar = document.getElementById("countdown-bar");
+  if(h===0 && m<30) bar.classList.add("urgent-time");
+  else bar.classList.remove("urgent-time");
+}
+
+/* ══ MODE NUIT (filtre bleu) ══ */
+function checkNightMode(){
+  const h = new Date().getHours();
+  document.body.classList.toggle("night-mode", h>=21);
+  document.getElementById("screen-warning").style.display = (h>=20 && h<22) ? "block" : "none";
+}
+
+/* ══ MODE URGENT ══ */
+function checkUrgentMode(){
+  const h = new Date().getHours();
+  const isUrgent = h>=21 && h<24;
+  document.body.classList.toggle("urgent-mode", isUrgent);
+  document.getElementById("urgent-banner").style.display = isUrgent ? "block" : "none";
+}
+
+/* ══ OVERLAY 22H ══ */
+let overlayShown = false;
+function checkSleepOverlay(){
+  const h = new Date().getHours();
+  if(h===22 && !overlayShown){
+    overlayShown = true;
+    showSleepOverlay();
   }
 }
 
-/* ── TIMER GUITARE ── */
-let t=300;
-let interval;
+function showSleepOverlay(){
+  const overlay = document.getElementById("sleep-overlay");
+  overlay.classList.add("show");
+  startStars();
+}
 
+function closeOverlay(){
+  document.getElementById("sleep-overlay").classList.remove("show");
+}
+
+function startStars(){
+  const canvas = document.getElementById("starCanvas");
+  const ctx2 = canvas.getContext("2d");
+  canvas.width=window.innerWidth; canvas.height=window.innerHeight;
+  const stars = Array.from({length:120},()=>({
+    x:Math.random()*canvas.width,
+    y:Math.random()*-canvas.height,
+    speed:0.4+Math.random()*1.2,
+    r:0.5+Math.random()*1.5,
+    alpha:0.4+Math.random()*0.6
+  }));
+  function draw(){
+    ctx2.clearRect(0,0,canvas.width,canvas.height);
+    stars.forEach(s=>{
+      ctx2.beginPath();
+      ctx2.arc(s.x,s.y,s.r,0,Math.PI*2);
+      ctx2.fillStyle=`rgba(200,220,255,${s.alpha})`;
+      ctx2.fill();
+      s.y += s.speed;
+      if(s.y>canvas.height){ s.y=-5; s.x=Math.random()*canvas.width; }
+    });
+    if(document.getElementById("sleep-overlay").classList.contains("show"))
+      requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+/* ══ TIMER GUITARE ══ */
+let timerT=300, timerInterval;
 function startTimer(){
-  clearInterval(interval);
-  t=300;
-  interval=setInterval(()=>{
-    let m=Math.floor(t/60);
-    let s=t%60;
-    document.getElementById("timer").innerText=
-      String(m).padStart(2,'0')+":"+String(s).padStart(2,'0');
-    t--;
-    if(t<0) clearInterval(interval);
+  clearInterval(timerInterval);
+  timerT=300;
+  timerInterval=setInterval(()=>{
+    const m=Math.floor(timerT/60), s=timerT%60;
+    document.getElementById("timer").innerText=String(m).padStart(2,'0')+":"+String(s).padStart(2,'0');
+    timerT--;
+    if(timerT<0){ clearInterval(timerInterval); if(navigator.vibrate) navigator.vibrate([100,50,100]); }
   },1000);
 }
 
-/* ── RÈGLES JOURS ── */
-
-/* guitare jeudi OFF */
-if(day === 4){
-  document.getElementById("guitareCard").style.display="none";
+/* ══ AVATAR ══ */
+function setAvatar(a){
+  document.getElementById("avatar").innerText=a;
+  save(AVATAR_KEY,a);
 }
 
-/* devoirs vendredi OFF */
-if(day === 5){
-  document.getElementById("devoirsCard").style.display="none";
+/* ══ RÈGLES JOURS ══ */
+function applyDayRules(){
+  if(DAY===4) document.getElementById("guitareCard").style.display="none";
+  if(DAY===5) document.getElementById("devoirsCard").style.display="none";
+  if(DAY===5||DAY===6) document.getElementById("sacCard").style.display="none";
+  if(DAY!==0) document.getElementById("gouttiere").style.display="none";
 }
 
-/* sac uniquement dimanche-lundi-mardi-mercredi-jeudi */
-if(day === 5 || day === 6){
-  document.getElementById("sacCard").style.display="none";
+/* ══ TICK GLOBAL ══ */
+function tick(){
+  updateCountdown();
+  highlightCurrentStep();
+  checkNightMode();
+  checkUrgentMode();
+  checkSleepOverlay();
 }
 
-/* gouttière uniquement dimanche */
-if(day !== 0){
-  document.getElementById("gouttiere").style.display="none";
-}
-
-/* ── INIT ── */
-resetIfNewDay();
-restoreState();
-update();
-
+/* ══ INIT ══ */
+(function init(){
+  resetIfNewDay();
+  applyDayRules();
+  const savedAvatar = load(AVATAR_KEY);
+  if(savedAvatar) document.getElementById("avatar").innerText = savedAvatar;
+  renderCustomTasks();
+  restoreState();
+  renderStats();
+  checkBadges();
+  update();
+  tick();
+  setInterval(tick, 10000); // toutes les 10s
+})();
 </script>
-
 </body>
 </html>
