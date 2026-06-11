@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sleep Quest V3</title>
+<title>Sleep Quest</title>
 
 <style>
 body{
@@ -69,27 +69,26 @@ button{
   opacity:0.75;
 }
 
-.section-title{
-  color:#7cf7ff;
-  margin-bottom:6px;
+.timer{
+  text-align:center;
+  font-size:18px;
+  margin:8px 0;
 }
 </style>
 </head>
 
 <body>
 
-<h1>🌙 Sleep Quest V3</h1>
+<h1>🌙 Sleep Quest</h1>
 
-<!-- AVATARS MANGA / POKEMON -->
+<!-- AVATARS -->
 <div class="card">
 <div class="avatar" id="avatar">⚡🧢</div>
 <div style="text-align:center">
-
 <button onclick="setAvatar('⚡🧢')">Ash</button>
 <button onclick="setAvatar('🐉🔥')">Dracaufeu</button>
-<button onclick="setAvatar('🌙👘')">Manga Girl</button>
+<button onclick="setAvatar('🌙👘')">Manga</button>
 <button onclick="setAvatar('🥷🖤')">Ninja</button>
-
 </div>
 </div>
 
@@ -97,119 +96,106 @@ button{
 <div class="card">
 <div class="bar"><div class="fill" id="bar"></div></div>
 <p id="status">Progression : 0%</p>
-<p class="small">Mission du soir = calmer le cerveau + préparer le sommeil</p>
 </div>
 
-<!-- 17h45 DEVOIRS -->
+<!-- DEVOIRS -->
 <div class="card">
-<div class="section-title">17h45 — Devoirs</div>
+<h3>17h45 — Devoirs</h3>
 <div class="step"><input type="checkbox" onchange="update()"> Devoirs faits</div>
 </div>
 
-<!-- 18h20 GUITARE -->
+<!-- GUITARE TIMER -->
 <div class="card">
-<div class="section-title">18h20 — Guitare (5 min + calme)</div>
-<div class="step"><input type="checkbox" onchange="update()"> Guitare 5 min (timer mental)</div>
+<h3>18h20 — Guitare (timer 5 min)</h3>
+<button onclick="startTimer()">▶ Start 5 min</button>
+<div class="timer" id="timer">05:00</div>
 </div>
 
-<!-- 18h30 RANGEMENT -->
+<!-- ORGANISATION -->
 <div class="card">
-<div class="section-title">18h30 — Organisation maison</div>
-<div class="step"><input type="checkbox" onchange="update()"> Ranger chambre</div>
+<h3>18h30 — Organisation maison</h3>
+<div class="step"><input type="checkbox" onchange="update()"> Ranger ma chambre</div>
 <div class="step"><input type="checkbox" onchange="update()"> Mes affaires rangées dans la maison</div>
 <div class="step"><input type="checkbox" onchange="update()"> Sac d’école prêt</div>
 </div>
 
-<!-- 18h55 ANIMAUX -->
+<!-- ANIMAUX -->
 <div class="card">
-<div class="section-title">18h55 — Animaux</div>
-<div class="step"><input type="checkbox" onchange="update()"> Cochon d’Inde nourris</div>
+<h3>18h55 — Animaux</h3>
+<div class="step"><input type="checkbox" onchange="update()"> Cochons d’Inde nourris</div>
 </div>
 
-<!-- 19h00 DÎNER -->
+<!-- DÎNER -->
 <div class="card">
-<div class="section-title">19h00–19h45 — Dîner calme</div>
-<p class="small">Lumière normale douce, pas d’écran stimulant</p>
+<h3>19h00–19h45 — Dîner calme</h3>
 </div>
 
-<!-- 19h45 TEMPS CALME -->
+<!-- TEMPS CALME -->
 <div class="card">
-<div class="section-title">19h45 — Temps calme (anti-stimulation)</div>
+<h3>19h45 — Temps calme</h3>
 <p class="small">
-✔ Lecture (Cercle des 17 conseillé)<br>
-✔ Dessin<br>
-✔ LEGO<br>
-✔ Musique douce casque<br><br>
-
-❌ YouTube / vidéos courtes<br>
-❌ jeux rapides<br>
-❌ contenus stressants
+✔ Lecture (Cercle des 17 recommandé)<br>
+✔ Dessin / LEGO<br>
+✔ Musique douce
+<br><br>
+❌ vidéos / jeux rapides
 </p>
 </div>
 
-<!-- 20h15 ORL -->
+<!-- ORL -->
 <div class="card">
-<div class="section-title">20h15 — Respiration ORL</div>
+<h3>20h15 — ORL</h3>
 <div class="step"><input type="checkbox" onchange="update()"> Lavage de nez</div>
-<p class="small">⏳ attendre 20 min</p>
-<div class="step"><input type="checkbox" onchange="update()"> Spray nasal</div>
+<div class="step"><input type="checkbox" onchange="update()"> Spray nasal (20 min après)</div>
 </div>
 
-<!-- 20h45 ROUTINE CORPORELLE -->
+<!-- ROUTINE CORPORELLE -->
 <div class="card">
-<div class="section-title">20h45 — Routine corps + lumière</div>
-<div class="step"><input type="checkbox" onchange="update()"> Toilettes</div>
+<h3>20h45 — Routine du corps</h3>
+
+<div class="step"><input type="checkbox" onchange="update()"> Douche</div>
 <div class="step"><input type="checkbox" onchange="update()"> Brossage dents</div>
+<div class="step"><input type="checkbox" onchange="update()"> Gouttière (dimanche soir obligatoire)</div>
 <div class="step"><input type="checkbox" onchange="update()"> Pyjama</div>
-<p class="small">
-💡 Lumière chaude uniquement (jaune/orange)
-</p>
+<div class="step"><input type="checkbox" onchange="update()"> Ranger ma serviette et mes vêtements</div>
+
+<p class="small">Lumière chaude uniquement (jaune/orange)</p>
 </div>
 
-<!-- 21h15 BIBLIOTHÈQUE -->
+<!-- LECTURE -->
 <div class="card">
-<div class="section-title">21h15–22h00 — Lecture bibliothèque</div>
-
+<h3>21h15–22h00 — Lecture calme</h3>
 <p class="small">
-Lecture conseillée (important pour pas stimuler le cerveau) :<br><br>
-
 ✔ Fantastique doux / aventure lente<br>
-✔ Manga calme (pas combat intense)<br>
-✔ Roman type “Cercle des 17”<br>
-✔ Histoires continues sans suspense violent<br><br>
+✔ Manga calme sans combat intense<br>
+✔ Roman type Cercle des 17<br><br>
 
-❌ thriller / horreur / suspense fort<br>
-❌ manga trop combat / tension<br>
+❌ horreur / suspense / combat fort
 </p>
-
 </div>
 
-<!-- 22h00 SOMMEIL -->
+<!-- SOMMEIL -->
 <div class="card">
-<div class="section-title">22h00 — Installation sommeil</div>
-
-<div class="step"><input type="checkbox" onchange="update()"> Extinction lumière principale</div>
-<div class="step"><input type="checkbox" onchange="update()"> Bruit blanc activé</div>
+<h3>22h00 — Installation sommeil</h3>
+<div class="step"><input type="checkbox" onchange="update()"> Lumière éteinte</div>
+<div class="step"><input type="checkbox" onchange="update()"> Sons blancs activés</div>
 
 <p class="small">
-Phrase stable (hyper important) :<br>
 “Tu es en sécurité. Tout le monde est là pour toi. Tu peux dormir.”
 </p>
 </div>
 
-<!-- BRUITS BLANCS -->
+<!-- SONS BLANCS -->
 <div class="card">
-<div class="section-title">🔊 Sons anti-monstres</div>
+<h3>🔊 Sons blancs</h3>
 
-<button onclick="noise('rain')">🌧️ Pluie</button>
-<button onclick="noise('wave')">🌊 Vagues</button>
-<button onclick="noise('white')">⚪ Blanc</button>
-<button onclick="stopNoise()">Stop</button>
+<button onclick="sound('rain')">🌧️ Pluie</button>
+<button onclick="sound('waves')">🌊 Vagues</button>
+<button onclick="sound('white')">⚪ White noise</button>
+<button onclick="stopSound()">Stop</button>
 
 <p class="small">
-👉 À activer à partir de 21h15 ou peur nocturne<br>
-👉 aide à masquer les bruits de maison<br>
-👉 ne pas changer de son dans la nuit
+À utiliser au coucher ou réveil nocturne
 </p>
 </div>
 
@@ -228,40 +214,64 @@ function update(){
   let boxes=document.querySelectorAll("input");
   let c=0;
   boxes.forEach(b=>{if(b.checked)c++;});
-
   let p=Math.round((c/boxes.length)*100);
-
   document.getElementById("bar").style.width=p+"%";
   document.getElementById("status").innerText="Progression : "+p+"%";
 }
 
-/* BRUITS */
-function noise(type){
-  stopNoise();
+/* TIMER GUITARE */
+let t=300;
+let interval;
+
+function startTimer(){
+  clearInterval(interval);
+  t=300;
+
+  interval=setInterval(()=>{
+    let m=Math.floor(t/60);
+    let s=t%60;
+    document.getElementById("timer").innerText =
+      String(m).padStart(2,'0')+":"+String(s).padStart(2,'0');
+
+    t--;
+    if(t<0) clearInterval(interval);
+
+  },1000);
+}
+
+/* SONS PROPRES (plus fiables) */
+function sound(type){
+  stopSound();
+
   ctx = new (window.AudioContext || window.webkitAudioContext)();
 
-  const size = 2 * ctx.sampleRate;
-  const buffer = ctx.createBuffer(1,size,ctx.sampleRate);
-  const data = buffer.getChannelData(0);
+  let bufferSize = ctx.sampleRate * 2;
+  let buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+  let data = buffer.getChannelData(0);
 
-  for(let i=0;i<size;i++){
-    let v = Math.random()*2-1;
+  for(let i=0;i<bufferSize;i++){
 
-    if(type==="rain") v = Math.random()*2-1;
-    if(type==="wave") v = Math.sin(i/1000) + Math.random()*0.2;
-    if(type==="white") v = Math.random()*2-1;
+    if(type==="white"){
+      data[i] = Math.random()*2-1;
+    }
 
-    data[i]=v;
+    if(type==="rain"){
+      data[i] = (Math.random()*2-1)*0.6;
+    }
+
+    if(type==="waves"){
+      data[i] = Math.sin(i/800) * 0.5 + (Math.random()*0.2);
+    }
   }
 
   source = ctx.createBufferSource();
-  source.buffer=buffer;
-  source.loop=true;
+  source.buffer = buffer;
+  source.loop = true;
   source.connect(ctx.destination);
   source.start();
 }
 
-function stopNoise(){
+function stopSound(){
   if(source){
     source.stop();
     source.disconnect();
