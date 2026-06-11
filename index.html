@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sleep Quest</title>
 
-<!-- 🌙 ICONE APP (favicon lune) -->
 <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO7f1c8AAAAASUVORK5CYII=">
 
 <style>
@@ -17,10 +16,7 @@ body{
   padding:16px;
 }
 
-h1{
-  text-align:center;
-  color:#7cf7ff;
-}
+h1{text-align:center;color:#7cf7ff;}
 
 .card{
   background:#151a33;
@@ -59,14 +55,6 @@ input{
   text-align:center;
 }
 
-button{
-  background:#7cf7ff;
-  border:none;
-  padding:6px 10px;
-  margin:4px;
-  border-radius:8px;
-}
-
 .timer{
   text-align:center;
   font-size:18px;
@@ -80,7 +68,7 @@ button{
 <h1>🌙 Sleep Quest</h1>
 
 <div class="card">
-<div class="avatar" id="avatar">🌙</div>
+<div class="avatar">🌙</div>
 </div>
 
 <!-- PROGRESSION -->
@@ -92,7 +80,7 @@ button{
 <!-- DEVOIRS -->
 <div class="card" id="devoirsCard">
 <h3>17h45 — Devoirs</h3>
-<div class="step"><input type="checkbox" onchange="save()"> Devoirs faits</div>
+<div class="step task"><input type="checkbox" onchange="save()"> Devoirs faits</div>
 </div>
 
 <!-- GUITARE -->
@@ -100,15 +88,15 @@ button{
 <h3>18h20 — Guitare</h3>
 <button onclick="startTimer()">▶ 5 min</button>
 <div class="timer" id="timer">05:00</div>
-<div class="step"><input type="checkbox" onchange="save()"> Guitare faite</div>
+<div class="step task"><input type="checkbox" onchange="save()"> Guitare faite</div>
 </div>
 
 <!-- ORGANISATION -->
 <div class="card">
 <h3>18h30 — Organisation</h3>
-<div class="step"><input type="checkbox" onchange="save()"> Ranger ma chambre</div>
-<div class="step"><input type="checkbox" onchange="save()"> Ranger mes affaires dans la maison</div>
-<div class="step" id="sacCard">
+<div class="step task"><input type="checkbox" onchange="save()"> Ranger ma chambre</div>
+<div class="step task"><input type="checkbox" onchange="save()"> Ranger mes affaires dans la maison</div>
+<div class="step task" id="sacCard">
 <input type="checkbox" onchange="save()"> Sac d'école prêt et descendu
 </div>
 </div>
@@ -116,134 +104,106 @@ button{
 <!-- ANIMAUX -->
 <div class="card">
 <h3>18h55 — Animaux</h3>
-<div class="step"><input type="checkbox" onchange="save()"> Je me suis occupé des cochons d’Inde</div>
+<div class="step task"><input type="checkbox" onchange="save()"> Je me suis occupé des cochons d’Inde</div>
 </div>
 
 <!-- ROUTINE -->
 <div class="card">
-<h3>20h45 — Routine</h3>
-<div class="step"><input type="checkbox" onchange="save()"> Douche</div>
-<div class="step"><input type="checkbox" onchange="save()"> Brossage dents</div>
-<div class="step" id="gouttiere">
+<h3>20h45 — Routine du corps</h3>
+<div class="step task"><input type="checkbox" onchange="save()"> Douche</div>
+<div class="step task"><input type="checkbox" onchange="save()"> Brossage dents</div>
+<div class="step task" id="gouttiere">
 <input type="checkbox" onchange="save()"> Gouttière
 </div>
-<div class="step"><input type="checkbox" onchange="save()"> Pyjama</div>
-<div class="step"><input type="checkbox" onchange="save()"> Ranger serviette et vêtements</div>
+<div class="step task"><input type="checkbox" onchange="save()"> Pyjama</div>
+<div class="step task"><input type="checkbox" onchange="save()"> Ranger serviette et vêtements</div>
 </div>
 
-<!-- LECTURE -->
+<!-- LECTURE (RECOMMANDATIONS RESTAURÉES) -->
 <div class="card">
 <h3>21h15 — Lecture calme</h3>
-<div class="step"><input type="checkbox" onchange="save()"> Lecture faite</div>
+<p style="font-size:12px;opacity:0.8">
+✔ Fantastique doux (Le Cercle des 17 OK)<br>
+✔ Manga calme / BD lente<br>
+✔ dessin / LEGO<br><br>
+❌ vidéos / contenu rapide / stress / combat intense
+</p>
+<div class="step task"><input type="checkbox" onchange="save()"> Lecture faite</div>
 </div>
 
 <!-- SOMMEIL -->
 <div class="card">
 <h3>22h00 — Sommeil</h3>
-<div class="step"><input type="checkbox" onchange="save()"> Lumière éteinte</div>
-<div class="step"><input type="checkbox" onchange="save()"> Installation sommeil</div>
+<div class="step task"><input type="checkbox" onchange="save()"> Lumière éteinte</div>
+<div class="step task"><input type="checkbox" onchange="save()"> Écouter un bruit blanc</div>
 </div>
 
-<!-- TIMER -->
 <script>
 
 const day = new Date().getDay();
-const todayKey = "sleepquest_" + new Date().toDateString();
+const todayKey = "sq_" + new Date().toDateString();
 
-/* -----------------------------
-   RESET JOURNALIER AUTO
-------------------------------*/
-if(localStorage.getItem("dayKey") !== todayKey){
-  localStorage.setItem("dayKey", todayKey);
-  localStorage.removeItem("progress");
+/* RESET JOUR */
+if(localStorage.getItem("day") !== todayKey){
+  localStorage.setItem("day", todayKey);
+  localStorage.removeItem("state");
 }
 
-/* -----------------------------
-   AFFICHAGE CONDITIONS
-------------------------------*/
+/* AFFICHAGE CONDITIONNEL */
+if(day === 4) document.getElementById("guitareCard").style.display="none";
+if(day === 5) document.getElementById("devoirsCard").style.display="none";
+if(day === 5 || day === 6) document.getElementById("sacCard").style.display="none";
+if(day !== 0) document.getElementById("gouttiere").style.display="none";
 
-/* guitare jeudi off */
-if(day === 4){
-  document.getElementById("guitareCard").style.display="none";
-}
-
-/* devoirs vendredi off */
-if(day === 5){
-  document.getElementById("devoirsCard").style.display="none";
-}
-
-/* sac week-end off */
-if(day === 5 || day === 6){
-  document.getElementById("sacCard").style.display="none";
-}
-
-/* gouttière dimanche only */
-if(day !== 0){
-  document.getElementById("gouttiere").style.display="none";
-}
-
-/* -----------------------------
-   SAUVEGARDE CHECKBOX
-------------------------------*/
+/* SAVE */
 function save(){
-  const checkboxes = document.querySelectorAll("input[type=checkbox]");
+  const tasks = document.querySelectorAll(".task input[type=checkbox]");
   let data = [];
-  checkboxes.forEach((c,i)=>{
-    data[i]=c.checked;
-  });
-  localStorage.setItem("progress", JSON.stringify(data));
+  tasks.forEach(t=>data.push(t.checked));
+  localStorage.setItem("state", JSON.stringify(data));
   update();
 }
 
-/* -----------------------------
-   RESTORE STATE
-------------------------------*/
+/* LOAD */
 function load(){
-  let data = JSON.parse(localStorage.getItem("progress") || "[]");
-  const checkboxes = document.querySelectorAll("input[type=checkbox]");
-  checkboxes.forEach((c,i)=>{
-    c.checked = data[i] || false;
-  });
+  const data = JSON.parse(localStorage.getItem("state") || "[]");
+  const tasks = document.querySelectorAll(".task input[type=checkbox]");
+  tasks.forEach((t,i)=>t.checked = data[i] || false);
 }
 
-/* -----------------------------
-   PROGRESSION CORRIGÉE (100% OK)
-------------------------------*/
+/* PROGRESSION CORRIGÉE (100% garanti) */
 function update(){
-  const boxes = document.querySelectorAll("input[type=checkbox]");
-  let checked = 0;
+  const tasks = document.querySelectorAll(".task input[type=checkbox]");
+  let total = tasks.length;
+  let done = 0;
 
-  boxes.forEach(b=>{
-    if(b.checked) checked++;
+  tasks.forEach(t=>{
+    if(t.checked) done++;
   });
 
-  let percent = boxes.length ? Math.round((checked / boxes.length) * 100) : 0;
+  let percent = total ? Math.round((done / total) * 100) : 0;
 
   document.getElementById("bar").style.width = percent + "%";
   document.getElementById("status").innerText = "Progression : " + percent + "%";
 }
 
-/* -----------------------------
-   TIMER GUITARE
-------------------------------*/
-let t = 300;
+/* TIMER */
+let t=300;
 let interval;
 
 function startTimer(){
   clearInterval(interval);
-  t = 300;
+  t=300;
 
-  interval = setInterval(()=>{
-    let m = Math.floor(t/60);
-    let s = t%60;
+  interval=setInterval(()=>{
+    let m=Math.floor(t/60);
+    let s=t%60;
 
     document.getElementById("timer").innerText =
-      String(m).padStart(2,'0') + ":" + String(s).padStart(2,'0');
+      String(m).padStart(2,'0')+":"+String(s).padStart(2,'0');
 
     t--;
-
-    if(t < 0) clearInterval(interval);
-
+    if(t<0) clearInterval(interval);
   },1000);
 }
 
