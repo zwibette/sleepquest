@@ -81,6 +81,7 @@ button{
 
 <h1>🌙 Sleep Quest</h1>
 
+<!-- AVATAR -->
 <div class="card">
 <div class="avatar" id="avatar">⚡🧢</div>
 <div style="text-align:center">
@@ -91,6 +92,7 @@ button{
 </div>
 </div>
 
+<!-- PROGRESSION -->
 <div class="card">
 <div class="bar"><div class="fill" id="bar"></div></div>
 <p id="status">Progression : 0%</p>
@@ -114,7 +116,9 @@ button{
 <h3>18h30 — Organisation</h3>
 <div class="step"><input type="checkbox" onchange="update()"> Ranger ma chambre</div>
 <div class="step"><input type="checkbox" onchange="update()"> Ranger mes affaires dans la maison</div>
-<div class="step"><input type="checkbox" onchange="update()"> Sac d'école prêt et descendu</div>
+<div class="step" id="sacCard">
+<input type="checkbox" onchange="update()"> Sac d'école prêt et descendu
+</div>
 </div>
 
 <!-- ANIMAUX -->
@@ -132,14 +136,14 @@ button{
 <div class="card">
 <h3>19h45 — Temps calme</h3>
 <p class="small">
-Lecture (Cercle des 17), dessin, LEGO, musique douce<br>
-❌ vidéos rapides / jeux compétitifs
+Lecture, dessin, LEGO, musique douce<br>
+❌ vidéos rapides / jeux
 </p>
 </div>
 
-<!-- ORL -->
+<!-- NEZ -->
 <div class="card">
-<h3>20h15 — Nez</h3>
+<h3>20h15 — Soins nez</h3>
 <div class="step"><input type="checkbox" onchange="update()"> Lavage de nez</div>
 <div class="step"><input type="checkbox" onchange="update()"> Spray nasal (20 min après)</div>
 </div>
@@ -150,7 +154,6 @@ Lecture (Cercle des 17), dessin, LEGO, musique douce<br>
 <div class="step"><input type="checkbox" onchange="update()"> Douche</div>
 <div class="step"><input type="checkbox" onchange="update()"> Brossage dents</div>
 
-<!-- gouttière uniquement dimanche -->
 <div class="step" id="gouttiere">
 <input type="checkbox" onchange="update()"> Gouttière
 </div>
@@ -163,9 +166,8 @@ Lecture (Cercle des 17), dessin, LEGO, musique douce<br>
 <div class="card">
 <h3>21h15–22h — Lecture calme</h3>
 <p class="small">
-✔ Fantastique doux / aventure lente<br>
-✔ Manga calme<br>
-❌ horreur / stress / combat intense
+✔ Fantastique doux / manga calme<br>
+❌ horreur / stress / action intense
 </p>
 </div>
 
@@ -174,10 +176,7 @@ Lecture (Cercle des 17), dessin, LEGO, musique douce<br>
 <h3>22h00 — Sommeil</h3>
 <div class="step"><input type="checkbox" onchange="update()"> Lumière éteinte</div>
 <div class="step"><input type="checkbox" onchange="update()"> Bruit blanc</div>
-
-<p class="small">
-“Tu es en sécurité. Tout le monde est là pour toi. Tu peux dormir.”
-</p>
+<p class="small">“Tu es en sécurité. Tu peux dormir.”</p>
 </div>
 
 <!-- SONS -->
@@ -211,7 +210,7 @@ function update(){
   document.getElementById("status").innerText="Progression : "+p+"%";
 }
 
-/* GUITARE TIMER */
+/* TIMER GUITARE */
 let t=300;
 let interval;
 
@@ -259,7 +258,24 @@ function stopSound(){
   }
 }
 
-/* GOUTTIÈRE UNIQUEMENT DIMANCHE */
+/* RÈGLES JOURS */
+
+/* guitare jeudi OFF */
+if(day === 4){
+  document.getElementById("guitareCard").style.display="none";
+}
+
+/* devoirs vendredi OFF */
+if(day === 5){
+  document.getElementById("devoirsCard").style.display="none";
+}
+
+/* sac uniquement dimanche-lundi-mardi-mercredi-jeudi */
+if(day === 5 || day === 6){
+  document.getElementById("sacCard").style.display="none";
+}
+
+/* gouttière uniquement dimanche */
 if(day !== 0){
   document.getElementById("gouttiere").style.display="none";
 }
