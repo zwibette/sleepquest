@@ -1,26 +1,26 @@
-:::writing{id="12891" variant="standard"}
+🌙📱 Sleep Quest — fichier unique index.html
+:::writing{id="55102" variant="standard"}
 �
 
 �
 Sleep Quest
 �
-
-�
-body{ margin:0; font-family: Arial; background: linear-gradient(#0b1026,#05060f); color:white; padding:16px; } h1{text-align:center;color:#7cf7ff} .card{ background:#151a33; padding:12px; margin:10px 0; border-radius:12px; } .step{display:flex;align-items:center;margin:8px 0} input{transform:scale(1.3);margin-right:10px} .bar{height:14px;background:#222;border-radius:10px;overflow:hidden} .fill{height:100%;width:0%;background:linear-gradient(90deg,#7cf7ff,#a66bff)} .small{font-size:12px;opacity:0.8} .avatar{ text-align:center; font-size:50px; margin:10px 0; } button{ background:#7cf7ff; border:none; padding:6px 10px; border-radius:8px; margin:4px; } 
+body{ margin:0; font-family: Arial, sans-serif; background: linear-gradient(#0b1026,#05060f); color:white; padding:16px; } h1{ text-align:center; color:#7cf7ff; margin-bottom:4px; } .subtitle{ text-align:center; font-size:12px; opacity:0.7; margin-bottom:10px; } .card{ background:#151a33; padding:12px; margin:10px 0; border-radius:12px; } .step{ display:flex; align-items:center; margin:8px 0; } input[type="checkbox"]{ transform:scale(1.3); margin-right:10px; } .bar{ height:14px; background:#222; border-radius:10px; overflow:hidden; } .fill{ height:100%; width:0%; background:linear-gradient(90deg,#7cf7ff,#a66bff); transition:0.3s; } .avatar{ font-size:50px; text-align:center; } button{ background:#7cf7ff; border:none; padding:6px 10px; margin:4px; border-radius:8px; font-size:12px; } .small{ font-size:12px; opacity:0.7; } .status{ text-align:center; margin-top:8px; font-size:14px; } 
 �
 
 �
 
 �
 🌙 Sleep Quest
+Mission nocturne — mode calme activé
 
 �
 🧑‍🚀
 A B C D 
 
 �
-Progression sommeil : 0%
-Boss : éveil actif 🟡
+Progression : 0%
+Boss : vigilance active 🟡
 
 �
 🎸 Guitare
@@ -28,31 +28,30 @@ Boss : éveil actif 🟡
 
 �
 🐹 Animaux
-Cochons d’Inde
+Nourrir les cochons d’Inde
 
 �
 🎒 Organisation
-Sac école
-Chambre OK
+Sac d’école prêt
+Chambre rangée
 
 �
-🚿 Reset corps
+🚿 Reset du corps
 Douche
-Nez + pyjama
+Lavage de nez + pyjama
 
 �
 📖 Lecture manga
-Lecture calme
+Lecture au calme
 
 �
-🔊 Bruits de protection
+🔊 Bruits blancs (anti-monstres)
 
 Blanc Rose Brown Stop
 �
-Choisir un bruit = “mode sécurité nuit”
-
+Choisis un son = mode sécurité activé
 
 �
-let audioCtx; let node; function setAvatar(a){ document.getElementById("avatar").innerText=a; } function update(){ let boxes=document.querySelectorAll("input"); let c=0; boxes.forEach(b=>{if(b.checked)c++;}); let p=Math.round((c/boxes.length)*100); document.getElementById("bar").style.width=p+"%"; document.getElementById("xp").innerText="Progression sommeil : "+p+"%"; let boss="Éveil actif 🟡"; if(p>40) boss="Monstre de vigilance 🟠 affaibli"; if(p>75) boss="Boss sommeil en approche 🔵"; if(p==100) boss="💤 ENDORMISSEMENT : VICTOIRE"; document.getElementById("boss").innerText="Boss : "+boss; } /* ===== BRUITS BLANCS ===== */ function noise(type){ stopNoise(); audioCtx = new (window.AudioContext || window.webkitAudioContext)(); const bufferSize = 2 * audioCtx.sampleRate; const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate); const output = noiseBuffer.getChannelData(0); for (let i = 0; i < bufferSize; i++) { let val = Math.random() * 2 - 1; if(type==="pink") val *= Math.random(); if(type==="brown") val = (val + (output[i-1]||0)) / 2; output[i]=val; } node = audioCtx.createBufferSource(); node.buffer=noiseBuffer; node.loop=true; node.connect(audioCtx.destination); node.start(); } function stopNoise(){ if(node) node.stop(); } 
+let ctx; let source; function setAvatar(a){ document.getElementById("avatar").innerText = a; } function update(){ let boxes = document.querySelectorAll("input[type='checkbox']"); let checked = 0; boxes.forEach(b => { if(b.checked) checked++; }); let percent = Math.round((checked / boxes.length) * 100); document.getElementById("bar").style.width = percent + "%"; document.getElementById("status").innerText = "Progression : " + percent + "%"; let boss = "Vigilance active 🟡"; if(percent >= 40) boss = "Monstre de vigilance 🟠 affaibli"; if(percent >= 75) boss = "Boss sommeil proche 🔵"; if(percent == 100) boss = "💤 ENDORMISSEMENT RÉUSSI"; document.getElementById("boss").innerText = "Boss : " + boss; } /* ===== BRUITS BLANCS ===== */ function playNoise(type){ stopNoise(); ctx = new (window.AudioContext || window.webkitAudioContext)(); const bufferSize = 2 * ctx.sampleRate; const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate); const data = buffer.getChannelData(0); for(let i=0;i<bufferSize;i++){ let val = Math.random() * 2 - 1; if(type === "pink") val *= Math.random(); if(type === "brown") val = (val + (data[i-1] || 0)) / 2; data[i] = val; } source = ctx.createBufferSource(); source.buffer = buffer; source.loop = true; source.connect(ctx.destination); source.start(); } function stopNoise(){ if(source){ source.stop(); source.disconnect(); } } 
 �
 :::
