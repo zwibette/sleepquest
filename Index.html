@@ -1,57 +1,147 @@
-🌙📱 Sleep Quest — fichier unique index.html
-:::writing{id="55102" variant="standard"}
-�
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sleep Quest</title>
 
-�
-Sleep Quest
-�
-body{ margin:0; font-family: Arial, sans-serif; background: linear-gradient(#0b1026,#05060f); color:white; padding:16px; } h1{ text-align:center; color:#7cf7ff; margin-bottom:4px; } .subtitle{ text-align:center; font-size:12px; opacity:0.7; margin-bottom:10px; } .card{ background:#151a33; padding:12px; margin:10px 0; border-radius:12px; } .step{ display:flex; align-items:center; margin:8px 0; } input[type="checkbox"]{ transform:scale(1.3); margin-right:10px; } .bar{ height:14px; background:#222; border-radius:10px; overflow:hidden; } .fill{ height:100%; width:0%; background:linear-gradient(90deg,#7cf7ff,#a66bff); transition:0.3s; } .avatar{ font-size:50px; text-align:center; } button{ background:#7cf7ff; border:none; padding:6px 10px; margin:4px; border-radius:8px; font-size:12px; } .small{ font-size:12px; opacity:0.7; } .status{ text-align:center; margin-top:8px; font-size:14px; } 
-�
+<style>
+body{
+  margin:0;
+  font-family: Arial, sans-serif;
+  background: linear-gradient(#0b1026,#05060f);
+  color:white;
+  padding:16px;
+}
 
-�
+h1{
+  text-align:center;
+  color:#7cf7ff;
+}
 
-�
-🌙 Sleep Quest
-Mission nocturne — mode calme activé
+.card{
+  background:#151a33;
+  padding:12px;
+  margin:10px 0;
+  border-radius:12px;
+}
 
-�
-🧑‍🚀
-A B C D 
+.step{
+  display:flex;
+  align-items:center;
+  margin:8px 0;
+}
 
-�
-Progression : 0%
-Boss : vigilance active 🟡
+input{
+  transform:scale(1.3);
+  margin-right:10px;
+}
 
-�
-🎸 Guitare
-20 min calme
+.bar{
+  height:14px;
+  background:#222;
+  border-radius:10px;
+  overflow:hidden;
+}
 
-�
-🐹 Animaux
-Nourrir les cochons d’Inde
+.fill{
+  height:100%;
+  width:0%;
+  background:linear-gradient(90deg,#7cf7ff,#a66bff);
+  transition:0.3s;
+}
 
-�
-🎒 Organisation
-Sac d’école prêt
-Chambre rangée
+.avatar{
+  font-size:50px;
+  text-align:center;
+}
 
-�
-🚿 Reset du corps
-Douche
-Lavage de nez + pyjama
+button{
+  background:#7cf7ff;
+  border:none;
+  padding:6px 10px;
+  margin:4px;
+  border-radius:8px;
+}
 
-�
-📖 Lecture manga
-Lecture au calme
+.status{
+  text-align:center;
+  margin-top:6px;
+}
 
-�
-🔊 Bruits blancs (anti-monstres)
+</style>
+</head>
 
-Blanc Rose Brown Stop
-�
-Choisis un son = mode sécurité activé
+<body>
 
-�
-let ctx; let source; function setAvatar(a){ document.getElementById("avatar").innerText = a; } function update(){ let boxes = document.querySelectorAll("input[type='checkbox']"); let checked = 0; boxes.forEach(b => { if(b.checked) checked++; }); let percent = Math.round((checked / boxes.length) * 100); document.getElementById("bar").style.width = percent + "%"; document.getElementById("status").innerText = "Progression : " + percent + "%"; let boss = "Vigilance active 🟡"; if(percent >= 40) boss = "Monstre de vigilance 🟠 affaibli"; if(percent >= 75) boss = "Boss sommeil proche 🔵"; if(percent == 100) boss = "💤 ENDORMISSEMENT RÉUSSI"; document.getElementById("boss").innerText = "Boss : " + boss; } /* ===== BRUITS BLANCS ===== */ function playNoise(type){ stopNoise(); ctx = new (window.AudioContext || window.webkitAudioContext)(); const bufferSize = 2 * ctx.sampleRate; const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate); const data = buffer.getChannelData(0); for(let i=0;i<bufferSize;i++){ let val = Math.random() * 2 - 1; if(type === "pink") val *= Math.random(); if(type === "brown") val = (val + (data[i-1] || 0)) / 2; data[i] = val; } source = ctx.createBufferSource(); source.buffer = buffer; source.loop = true; source.connect(ctx.destination); source.start(); } function stopNoise(){ if(source){ source.stop(); source.disconnect(); } } 
-�
-:::
+<h1>🌙 Sleep Quest</h1>
+
+<div class="card">
+<div class="avatar" id="avatar">🧑‍🚀</div>
+<div style="text-align:center">
+<button onclick="setAvatar('🧑‍🚀')">A</button>
+<button onclick="setAvatar('🧙')">B</button>
+<button onclick="setAvatar('🥷')">C</button>
+<button onclick="setAvatar('🤖')">D</button>
+</div>
+</div>
+
+<div class="card">
+<div class="bar"><div class="fill" id="bar"></div></div>
+<div class="status" id="status">Progression : 0%</div>
+<div class="status" id="boss">Boss : vigilance active 🟡</div>
+</div>
+
+<div class="card">
+<h3>🎸 Guitare</h3>
+<div class="step"><input type="checkbox" onchange="update()"> 20 min calme</div>
+</div>
+
+<div class="card">
+<h3>🐹 Animaux</h3>
+<div class="step"><input type="checkbox" onchange="update()"> Cochons d’Inde</div>
+</div>
+
+<div class="card">
+<h3>🎒 Organisation</h3>
+<div class="step"><input type="checkbox" onchange="update()"> Sac école</div>
+<div class="step"><input type="checkbox" onchange="update()"> Chambre rangée</div>
+</div>
+
+<div class="card">
+<h3>🚿 Douche</h3>
+<div class="step"><input type="checkbox" onchange="update()"> Douche + pyjama</div>
+</div>
+
+<div class="card">
+<h3>📖 Lecture</h3>
+<div class="step"><input type="checkbox" onchange="update()"> Lecture manga</div>
+</div>
+
+<script>
+function setAvatar(a){
+  document.getElementById("avatar").innerText = a;
+}
+
+function update(){
+  let boxes=document.querySelectorAll("input");
+  let checked=0;
+
+  boxes.forEach(b=>{if(b.checked)checked++;});
+
+  let percent=Math.round((checked/boxes.length)*100);
+
+  document.getElementById("bar").style.width=percent+"%";
+  document.getElementById("status").innerText="Progression : "+percent+"%";
+
+  let boss="Vigilance active 🟡";
+  if(percent>40) boss="Monstre affaibli 🟠";
+  if(percent>75) boss="Boss sommeil proche 🔵";
+  if(percent==100) boss="💤 ENDORMISSEMENT OK";
+
+  document.getElementById("boss").innerText="Boss : "+boss;
+}
+</script>
+
+</body>
+</html>
