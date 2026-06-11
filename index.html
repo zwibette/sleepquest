@@ -5,8 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sleep Quest</title>
 
-<link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO7f1c8AAAAASUVORK5CYII=">
-
 <style>
 body{
   margin:0;
@@ -16,7 +14,10 @@ body{
   padding:16px;
 }
 
-h1{text-align:center;color:#7cf7ff;}
+h1{
+  text-align:center;
+  color:#7cf7ff;
+}
 
 .card{
   background:#151a33;
@@ -55,6 +56,19 @@ input{
   text-align:center;
 }
 
+button{
+  background:#7cf7ff;
+  border:none;
+  padding:6px 10px;
+  margin:4px;
+  border-radius:8px;
+}
+
+.small{
+  font-size:12px;
+  opacity:0.75;
+}
+
 .timer{
   text-align:center;
   font-size:18px;
@@ -67,8 +81,15 @@ input{
 
 <h1>🌙 Sleep Quest</h1>
 
+<!-- AVATAR -->
 <div class="card">
-<div class="avatar">🌙</div>
+<div class="avatar" id="avatar">⚡🧢</div>
+<div style="text-align:center">
+<button onclick="setAvatar('⚡🧢')">Ash</button>
+<button onclick="setAvatar('🐉🔥')">Dracaufeu</button>
+<button onclick="setAvatar('🌙👘')">Manga</button>
+<button onclick="setAvatar('🥷🖤')">Ninja</button>
+</div>
 </div>
 
 <!-- PROGRESSION -->
@@ -80,7 +101,7 @@ input{
 <!-- DEVOIRS -->
 <div class="card" id="devoirsCard">
 <h3>17h45 — Devoirs</h3>
-<div class="step task"><input type="checkbox" onchange="save()"> Devoirs faits</div>
+<div class="step"><input type="checkbox" onchange="update()"> Devoirs faits</div>
 </div>
 
 <!-- GUITARE -->
@@ -88,106 +109,108 @@ input{
 <h3>18h20 — Guitare</h3>
 <button onclick="startTimer()">▶ 5 min</button>
 <div class="timer" id="timer">05:00</div>
-<div class="step task"><input type="checkbox" onchange="save()"> Guitare faite</div>
 </div>
 
 <!-- ORGANISATION -->
 <div class="card">
 <h3>18h30 — Organisation</h3>
-<div class="step task"><input type="checkbox" onchange="save()"> Ranger ma chambre</div>
-<div class="step task"><input type="checkbox" onchange="save()"> Ranger mes affaires dans la maison</div>
-<div class="step task" id="sacCard">
-<input type="checkbox" onchange="save()"> Sac d'école prêt et descendu
+<div class="step"><input type="checkbox" onchange="update()"> Ranger ma chambre</div>
+<div class="step"><input type="checkbox" onchange="update()"> Ranger mes affaires dans la maison</div>
+<div class="step" id="sacCard">
+<input type="checkbox" onchange="update()"> Sac d'école prêt et descendu
 </div>
 </div>
 
 <!-- ANIMAUX -->
 <div class="card">
 <h3>18h55 — Animaux</h3>
-<div class="step task"><input type="checkbox" onchange="save()"> Je me suis occupé des cochons d’Inde</div>
+<div class="step"><input type="checkbox" onchange="update()"> Je me suis occupé des cochons d’Inde</div>
+</div>
+
+<!-- DÎNER -->
+<div class="card">
+<h3>19h00 — Dîner calme</h3>
+</div>
+
+<!-- TEMPS CALME -->
+<div class="card">
+<h3>19h45 — Temps calme</h3>
+<p class="small">
+Lecture, dessin, LEGO, musique douce<br>
+❌ vidéos rapides / jeux
+</p>
+</div>
+
+<!-- NEZ -->
+<div class="card">
+<h3>20h15 — Soins nez</h3>
+<div class="step"><input type="checkbox" onchange="update()"> Lavage de nez</div>
+<div class="step"><input type="checkbox" onchange="update()"> Spray nasal (20 min après)</div>
 </div>
 
 <!-- ROUTINE -->
 <div class="card">
 <h3>20h45 — Routine du corps</h3>
-<div class="step task"><input type="checkbox" onchange="save()"> Douche</div>
-<div class="step task"><input type="checkbox" onchange="save()"> Brossage dents</div>
-<div class="step task" id="gouttiere">
-<input type="checkbox" onchange="save()"> Gouttière
-</div>
-<div class="step task"><input type="checkbox" onchange="save()"> Pyjama</div>
-<div class="step task"><input type="checkbox" onchange="save()"> Ranger serviette et vêtements</div>
+<div class="step"><input type="checkbox" onchange="update()"> Douche</div>
+<div class="step"><input type="checkbox" onchange="update()"> Brossage dents</div>
+
+<div class="step" id="gouttiere">
+<input type="checkbox" onchange="update()"> Gouttière
 </div>
 
-<!-- LECTURE (RECOMMANDATIONS RESTAURÉES) -->
+<div class="step"><input type="checkbox" onchange="update()"> Pyjama</div>
+<div class="step"><input type="checkbox" onchange="update()"> Ranger serviette et vêtements</div>
+</div>
+
+<!-- LECTURE -->
 <div class="card">
-<h3>21h15 — Lecture calme</h3>
-<p style="font-size:12px;opacity:0.8">
-✔ Fantastique doux (Le Cercle des 17 OK)<br>
-✔ Manga calme / BD lente<br>
-✔ dessin / LEGO<br><br>
-❌ vidéos / contenu rapide / stress / combat intense
+<h3>21h15–22h — Lecture calme</h3>
+<p class="small">
+✔ Fantastique doux / manga calme<br>
+❌ horreur / stress / action intense
 </p>
-<div class="step task"><input type="checkbox" onchange="save()"> Lecture faite</div>
 </div>
 
 <!-- SOMMEIL -->
 <div class="card">
 <h3>22h00 — Sommeil</h3>
-<div class="step task"><input type="checkbox" onchange="save()"> Lumière éteinte</div>
-<div class="step task"><input type="checkbox" onchange="save()"> Écouter un bruit blanc</div>
+<div class="step"><input type="checkbox" onchange="update()"> Lumière éteinte</div>
+<div class="step"><input type="checkbox" onchange="update()"> Bruit blanc</div>
+<p class="small">“Tu es en sécurité. Tu peux dormir.”</p>
+</div>
+
+<!-- SONS -->
+<div class="card">
+<h3>🔊 Sons blancs</h3>
+<button onclick="sound('rain')">🌧️ Pluie</button>
+<button onclick="sound('waves')">🌊 Vagues</button>
+<button onclick="sound('white')">⚪ Blanc</button>
+<button onclick="stopSound()">Stop</button>
 </div>
 
 <script>
 
-const day = new Date().getDay();
-const todayKey = "sq_" + new Date().toDateString();
+const day = new Date().getDay(); // 0 dimanche
 
-/* RESET JOUR */
-if(localStorage.getItem("day") !== todayKey){
-  localStorage.setItem("day", todayKey);
-  localStorage.removeItem("state");
+let ctx;
+let source;
+
+/* AVATAR */
+function setAvatar(a){
+  document.getElementById("avatar").innerText=a;
 }
 
-/* AFFICHAGE CONDITIONNEL */
-if(day === 4) document.getElementById("guitareCard").style.display="none";
-if(day === 5) document.getElementById("devoirsCard").style.display="none";
-if(day === 5 || day === 6) document.getElementById("sacCard").style.display="none";
-if(day !== 0) document.getElementById("gouttiere").style.display="none";
-
-/* SAVE */
-function save(){
-  const tasks = document.querySelectorAll(".task input[type=checkbox]");
-  let data = [];
-  tasks.forEach(t=>data.push(t.checked));
-  localStorage.setItem("state", JSON.stringify(data));
-  update();
-}
-
-/* LOAD */
-function load(){
-  const data = JSON.parse(localStorage.getItem("state") || "[]");
-  const tasks = document.querySelectorAll(".task input[type=checkbox]");
-  tasks.forEach((t,i)=>t.checked = data[i] || false);
-}
-
-/* PROGRESSION CORRIGÉE (100% garanti) */
+/* PROGRESSION */
 function update(){
-  const tasks = document.querySelectorAll(".task input[type=checkbox]");
-  let total = tasks.length;
-  let done = 0;
-
-  tasks.forEach(t=>{
-    if(t.checked) done++;
-  });
-
-  let percent = total ? Math.round((done / total) * 100) : 0;
-
-  document.getElementById("bar").style.width = percent + "%";
-  document.getElementById("status").innerText = "Progression : " + percent + "%";
+  let boxes=document.querySelectorAll("input");
+  let c=0;
+  boxes.forEach(b=>{if(b.checked)c++;});
+  let p=Math.round((c/boxes.length)*100);
+  document.getElementById("bar").style.width=p+"%";
+  document.getElementById("status").innerText="Progression : "+p+"%";
 }
 
-/* TIMER */
+/* TIMER GUITARE */
 let t=300;
 let interval;
 
@@ -198,18 +221,64 @@ function startTimer(){
   interval=setInterval(()=>{
     let m=Math.floor(t/60);
     let s=t%60;
-
-    document.getElementById("timer").innerText =
+    document.getElementById("timer").innerText=
       String(m).padStart(2,'0')+":"+String(s).padStart(2,'0');
 
     t--;
     if(t<0) clearInterval(interval);
+
   },1000);
 }
 
-/* INIT */
-load();
-update();
+/* SONS */
+function sound(type){
+  stopSound();
+  ctx = new (window.AudioContext || window.webkitAudioContext)();
+
+  let buffer = ctx.createBuffer(1, ctx.sampleRate*2, ctx.sampleRate);
+  let data = buffer.getChannelData(0);
+
+  for(let i=0;i<data.length;i++){
+    if(type==="white") data[i]=Math.random()*2-1;
+    if(type==="rain") data[i]=(Math.random()*2-1)*0.6;
+    if(type==="waves") data[i]=Math.sin(i/800)+Math.random()*0.2;
+  }
+
+  source = ctx.createBufferSource();
+  source.buffer = buffer;
+  source.loop = true;
+  source.connect(ctx.destination);
+  source.start();
+}
+
+function stopSound(){
+  if(source){
+    source.stop();
+    source.disconnect();
+  }
+}
+
+/* RÈGLES JOURS */
+
+/* guitare jeudi OFF */
+if(day === 4){
+  document.getElementById("guitareCard").style.display="none";
+}
+
+/* devoirs vendredi OFF */
+if(day === 5){
+  document.getElementById("devoirsCard").style.display="none";
+}
+
+/* sac uniquement dimanche-lundi-mardi-mercredi-jeudi */
+if(day === 5 || day === 6){
+  document.getElementById("sacCard").style.display="none";
+}
+
+/* gouttière uniquement dimanche */
+if(day !== 0){
+  document.getElementById("gouttiere").style.display="none";
+}
 
 </script>
 
