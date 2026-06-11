@@ -1,172 +1,58 @@
+:::writing{id="12891" variant="standard"}
+�
+
+�
+Sleep Quest
+�
+
+�
+body{ margin:0; font-family: Arial; background: linear-gradient(#0b1026,#05060f); color:white; padding:16px; } h1{text-align:center;color:#7cf7ff} .card{ background:#151a33; padding:12px; margin:10px 0; border-radius:12px; } .step{display:flex;align-items:center;margin:8px 0} input{transform:scale(1.3);margin-right:10px} .bar{height:14px;background:#222;border-radius:10px;overflow:hidden} .fill{height:100%;width:0%;background:linear-gradient(90deg,#7cf7ff,#a66bff)} .small{font-size:12px;opacity:0.8} .avatar{ text-align:center; font-size:50px; margin:10px 0; } button{ background:#7cf7ff; border:none; padding:6px 10px; border-radius:8px; margin:4px; } 
+�
+
+�
+
+�
+🌙 Sleep Quest
+
+�
+🧑‍🚀
+A B C D 
+
+�
+Progression sommeil : 0%
+Boss : éveil actif 🟡
+
+�
+🎸 Guitare
+20 min calme
+
+�
+🐹 Animaux
+Cochons d’Inde
+
+�
+🎒 Organisation
+Sac école
+Chambre OK
+
+�
+🚿 Reset corps
+Douche
+Nez + pyjama
+
+�
+📖 Lecture manga
+Lecture calme
+
+�
+🔊 Bruits de protection
+
+Blanc Rose Brown Stop
+�
+Choisir un bruit = “mode sécurité nuit”
 
 
-🌙📖 SLEEP QUEST – Night Mission Hiro (version manga RPG)
-
-👉 Installation : tu colles ça dans un fichier index.html et tu l’ouvres sur son téléphone / tu l’ajoutes à l’écran d’accueil.
-
-
----
-
-:::writing{id="91477" variant="standard"}
-
-<!DOCTYPE html><html lang="fr">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sleep Quest</title><style>
-body{
-    margin:0;
-    font-family: Arial, sans-serif;
-    background: linear-gradient(#0b1026,#05060f);
-    color:white;
-    padding:16px;
-}
-
-h1{
-    text-align:center;
-    color:#7cf7ff;
-    font-size:22px;
-}
-
-.subtitle{
-    text-align:center;
-    font-size:12px;
-    opacity:0.8;
-}
-
-.card{
-    background:#151a33;
-    padding:12px;
-    margin:10px 0;
-    border-radius:12px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.3);
-}
-
-.step{
-    display:flex;
-    align-items:center;
-    margin:8px 0;
-}
-
-input{
-    transform:scale(1.3);
-    margin-right:10px;
-}
-
-.bar-container{
-    height:14px;
-    background:#222;
-    border-radius:10px;
-    overflow:hidden;
-}
-
-.bar{
-    height:100%;
-    width:0%;
-    background: linear-gradient(90deg,#7cf7ff,#a66bff);
-    transition:0.3s;
-}
-
-.xp{
-    text-align:center;
-    font-size:12px;
-    margin-top:6px;
-    opacity:0.85;
-}
-
-.badge{
-    text-align:center;
-    font-size:13px;
-    margin-top:6px;
-    color:#ffd36a;
-}
-
-.small{
-    font-size:11px;
-    opacity:0.7;
-}
-</style></head><body><h1>🌙 SLEEP QUEST</h1>
-<div class="subtitle">Mission de récupération nocturne</div><div class="card">
-<div class="bar-container"><div id="bar" class="bar"></div></div>
-<div class="xp" id="xp">XP sommeil : 0%</div>
-<div class="badge" id="badge">Niveau : Explorateur</div>
-</div><div class="card">
-<h3>🎸 ÉTAPE 1 – Énergie créative</h3>
-<div class="step"><input type="checkbox" onchange="update()"><span>Guitare (mode calme, pas performance)</span></div>
-</div><div class="card">
-<h3>🐹 ÉTAPE 2 – Responsabilités</h3>
-<div class="step"><input type="checkbox" onchange="update()"><span>Coquins d’Inde : eau + nourriture</span></div>
-</div><div class="card">
-<h3>🎒 ÉTAPE 3 – Ordre du monde</h3>
-<div class="step"><input type="checkbox" onchange="update()"><span>Sac d’école prêt</span></div>
-<div class="step"><input type="checkbox" onchange="update()"><span>Chambre rangée niveau simple</span></div>
-</div><div class="card">
-<h3>🚿 ÉTAPE 4 – Reset du corps</h3>
-<div class="step"><input type="checkbox" onchange="update()"><span>Douche chaude</span></div>
-<div class="step"><input type="checkbox" onchange="update()"><span>Lavage de nez + pyjama</span></div>
-</div><div class="card">
-<h3>📖 ÉTAPE 5 – Mode manga</h3>
-<div class="step"><input type="checkbox" onchange="update()"><span>Lecture : Le Cercle des 17</span></div>
-<div class="small">Objectif : passer en mode “sommeil sécurisé”</div>
-</div><script>
-function update(){
-    let boxes=document.querySelectorAll("input");
-    let checked=0;
-
-    boxes.forEach(b=>{if(b.checked)checked++;});
-
-    let percent=Math.round((checked/boxes.length)*100);
-
-    document.getElementById("bar").style.width=percent+"%";
-    document.getElementById("xp").innerText="XP sommeil : "+percent+"%";
-
-    let badge="Explorateur";
-    if(percent>=30)badge="Guerrier calme";
-    if(percent>=60)badge="Gardien du sommeil";
-    if(percent>=90)badge="Maître du repos 🌙";
-
-    document.getElementById("badge").innerText="Niveau : "+badge;
-}
-</script></body>
-</html>
+�
+let audioCtx; let node; function setAvatar(a){ document.getElementById("avatar").innerText=a; } function update(){ let boxes=document.querySelectorAll("input"); let c=0; boxes.forEach(b=>{if(b.checked)c++;}); let p=Math.round((c/boxes.length)*100); document.getElementById("bar").style.width=p+"%"; document.getElementById("xp").innerText="Progression sommeil : "+p+"%"; let boss="Éveil actif 🟡"; if(p>40) boss="Monstre de vigilance 🟠 affaibli"; if(p>75) boss="Boss sommeil en approche 🔵"; if(p==100) boss="💤 ENDORMISSEMENT : VICTOIRE"; document.getElementById("boss").innerText="Boss : "+boss; } /* ===== BRUITS BLANCS ===== */ function noise(type){ stopNoise(); audioCtx = new (window.AudioContext || window.webkitAudioContext)(); const bufferSize = 2 * audioCtx.sampleRate; const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate); const output = noiseBuffer.getChannelData(0); for (let i = 0; i < bufferSize; i++) { let val = Math.random() * 2 - 1; if(type==="pink") val *= Math.random(); if(type==="brown") val = (val + (output[i-1]||0)) / 2; output[i]=val; } node = audioCtx.createBufferSource(); node.buffer=noiseBuffer; node.loop=true; node.connect(audioCtx.destination); node.start(); } function stopNoise(){ if(node) node.stop(); } 
+�
 :::
----
-
-🎯 Pourquoi cette version marche mieux pour lui
-
-🧠 1. Donne du contrôle
-
-Hypervigilance = besoin de maîtrise
-→ il “construit sa nuit”
-
-🎮 2. Renforcement positif doux
-
-XP
-
-niveaux
-
-progression visible
-
-
-👉 mais pas de dopamine excessive (important pour le sommeil)
-
-🌙 3. Narratif rassurant
-
-“Sleep Quest” = mission de protection
-→ remplace “peur des monstres” par “je suis le gardien”
-
-📉 4. Diminue les conflits
-
-→ ce n’est plus toi qui demandes
-→ c’est lui qui “complète sa mission”
-
-
----
-
-🧸 Petit tweak très important (je te conseille fortement)
-
-Ajoute une phrase fixe en bas de page :
-
-> “La maison est en sécurité. Rien ne peut entrer. Tu es en contrôle de ta mission.”
-
-
