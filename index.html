@@ -383,9 +383,127 @@
   }
   #custom-task-time:focus{ border-color:var(--cyan); }
 
+  /* ══ ROUE CRANTÉE + PANNEAU SETTINGS ══ */
+  #settings-btn{
+    position:fixed; top:14px; left:14px; z-index:200;
+    width:40px; height:40px; border-radius:50%;
+    background:var(--card2); border:1.5px solid #2a2f4a;
+    display:flex; align-items:center; justify-content:center;
+    font-size:20px; cursor:pointer;
+    transition: transform 0.4s ease, border-color 0.2s;
+    box-shadow: 0 2px 10px #00000066;
+    padding:0; margin:0;
+    color: var(--muted);
+  }
+  #settings-btn:hover{ border-color:var(--cyan); color:var(--cyan); }
+  #settings-btn.open{ transform:rotate(90deg); border-color:var(--cyan); color:var(--cyan); }
+
+  #settings-panel{
+    display:none;
+    position:fixed; inset:0; z-index:199;
+    background:#000000bb;
+    backdrop-filter: blur(4px);
+  }
+  #settings-panel.open{ display:block; }
+  #settings-inner{
+    position:absolute; top:0; left:0; right:0;
+    max-height:92vh; overflow-y:auto;
+    background: linear-gradient(160deg,#0f1530,#090d1e);
+    border-bottom-left-radius:18px;
+    border-bottom-right-radius:18px;
+    padding:60px 16px 24px;
+    box-shadow: 0 8px 32px #000000aa;
+  }
+  .settings-title{
+    font-family:'Bangers',cursive;
+    font-size:1.4rem; letter-spacing:2px;
+    color:var(--cyan); margin-bottom:14px;
+  }
+  .settings-section{
+    background:var(--card);
+    border-radius:12px;
+    padding:12px 14px;
+    margin-bottom:12px;
+  }
+  .settings-section-title{
+    font-size:11px; font-weight:bold;
+    color:var(--purple); text-transform:uppercase;
+    letter-spacing:1px; margin-bottom:10px;
+  }
+  /* Ligne d'une action permanente */
+  .perm-row{
+    display:flex; align-items:center; gap:8px;
+    margin:6px 0; background:#0d1228;
+    border-radius:8px; padding:7px 10px;
+    border:1px solid #1e2440;
+  }
+  .perm-row input[type=time]{
+    width:72px; background:#060a18; border:1px solid #2a2f4a;
+    border-radius:6px; color:var(--cyan); font-size:13px;
+    padding:4px 6px; outline:none; text-align:center;
+  }
+  .perm-row input[type=text]{
+    flex:1; background:#060a18; border:1px solid #2a2f4a;
+    border-radius:6px; color:var(--text); font-size:13px;
+    padding:4px 8px; outline:none;
+  }
+  .perm-row input:focus{ border-color:var(--cyan); }
+  .perm-row .del-btn{
+    background:none; border:none; color:#ff6b6b;
+    font-size:16px; cursor:pointer; padding:2px 4px;
+    border-radius:4px; line-height:1;
+    min-width:24px;
+  }
+  .perm-row .del-btn:active{ background:#ff000022; }
+  /* Formulaire ajout */
+  .perm-add-row{
+    display:flex; gap:6px; margin-top:10px; flex-wrap:wrap;
+  }
+  .perm-add-row input[type=time]{
+    width:76px; padding:7px 8px; border-radius:8px;
+    background:#0d1228; border:1px solid #2a2f4a;
+    color:var(--cyan); font-size:13px; outline:none; text-align:center;
+  }
+  .perm-add-row input[type=text]{
+    flex:1; min-width:120px; padding:7px 10px; border-radius:8px;
+    background:#0d1228; border:1px solid #2a2f4a;
+    color:var(--text); font-size:13px; outline:none;
+  }
+  .perm-add-row input:focus{ border-color:var(--cyan); }
+  .btn-save-settings{
+    width:100%; margin-top:14px;
+    background:linear-gradient(135deg,var(--purple),#5533aa);
+    color:white; font-size:14px; padding:11px;
+    border-radius:10px; border:none; cursor:pointer;
+    font-family:'Bangers',cursive; letter-spacing:2px; font-size:1rem;
+  }
+
+
 </style>
 </head>
 <body>
+
+<!-- ROUE CRANTÉE -->
+<button id="settings-btn" onclick="toggleSettings()" title="Réglages">⚙️</button>
+
+<!-- PANNEAU SETTINGS -->
+<div id="settings-panel">
+  <div id="settings-inner">
+    <div class="settings-title">⚙️ Réglages du planning</div>
+
+    <div class="settings-section">
+      <div class="settings-section-title">Actions permanentes</div>
+      <div id="perm-list"></div>
+      <div class="perm-add-row">
+        <input type="time" id="perm-new-time" placeholder="heure">
+        <input type="text" id="perm-new-label" placeholder="Nouvelle action..." maxlength="60">
+        <button onclick="addPermTask()" style="flex-shrink:0">+</button>
+      </div>
+    </div>
+
+    <button class="btn-save-settings" onclick="saveAndCloseSettings()">✔ Enregistrer et fermer</button>
+  </div>
+</div>
 
 <!-- OVERLAY SOMMEIL 22H -->
 <div id="sleep-overlay">
@@ -565,6 +683,7 @@ const LAST_DONE_KEY = "sq_last_done";
 const RECORD_KEY    = "sq_record";
 const CUSTOM_KEY    = "sq_custom";
 const AVATAR_KEY    = "sq_avatar";
+const PERM_KEY      = "sq_perm_tasks";
 
 /* ══ BADGES DÉFINIS ══ */
 const BADGES = [
@@ -790,7 +909,7 @@ function updateCardDone(){
   });
 }
 
-/* ══ NOTIFICATIONS ══ */
+/* ══ NOTIFICATIONS VIA SERVICE WORKER ══ */
 const NOTIF_SCHEDULE = [
   { h:17, m:45, text:"📚 C'est l'heure des devoirs !" },
   { h:18, m:0,  text:"🎒 Prépare ton sac d'école !" },
@@ -803,38 +922,86 @@ const NOTIF_SCHEDULE = [
   { h:22, m:0,  text:"🌙 C'est l'heure de dormir. Bonne nuit !" },
 ];
 
-let notifsFired = load("sq_notifs_fired") || {};
+let swReg = null;
 
-function requestNotifPermission(){
-  if(!("Notification" in window)) return;
-  if(Notification.permission==="default"){
-    Notification.requestPermission();
+async function setupServiceWorker(){
+  if(!("serviceWorker" in navigator)) return;
+  try {
+    // Inline Service Worker via Blob URL
+    const swCode = `
+self.addEventListener('message', e => {
+  if(e.data && e.data.type === 'SCHEDULE'){
+    const { delayMs, title, body } = e.data;
+    setTimeout(() => {
+      self.registration.showNotification(title, {
+        body,
+        icon: '/icon-192.png',
+        badge: '/icon-192.png',
+        vibrate: [200, 100, 200],
+        tag: 'sleepquest-' + Date.now()
+      });
+    }, delayMs);
+  }
+});
+self.addEventListener('notificationclick', e => { e.notification.close(); });
+    `;
+    const blob = new Blob([swCode], {type:'application/javascript'});
+    const swUrl = URL.createObjectURL(blob);
+    swReg = await navigator.serviceWorker.register(swUrl, {scope:'/'});
+    await navigator.serviceWorker.ready;
+    console.log('SW prêt');
+  } catch(err){
+    console.warn('SW échec:', err);
   }
 }
 
-function fireNotif(text){
-  if(!("Notification" in window) || Notification.permission!=="granted") return;
-  new Notification("🌙 Sleep Quest", { body: text, icon: document.getElementById("app-icon")?.href || "" });
+async function requestNotifPermission(){
+  if(!("Notification" in window)) return;
+  if(Notification.permission === "default"){
+    const perm = await Notification.requestPermission();
+    if(perm === "granted") scheduleAllNotifications();
+  } else if(Notification.permission === "granted"){
+    scheduleAllNotifications();
+  }
 }
 
-function checkNotifications(){
-  if(Notification.permission!=="granted") return;
+function scheduleAllNotifications(){
   const now = new Date();
-  const h = now.getHours(), m = now.getMinutes();
-  NOTIF_SCHEDULE.forEach(n=>{
-    const key = `${n.h}:${n.m}`;
-    if(h===n.h && m===n.m && !notifsFired[key]){
-      notifsFired[key]=true;
-      save("sq_notifs_fired", notifsFired);
-      fireNotif(n.text);
-    }
+  NOTIF_SCHEDULE.forEach(n => {
+    const target = new Date();
+    target.setHours(n.h, n.m, 0, 0);
+    const delay = target - now;
+    if(delay > 0) sendToSW(delay, "🌙 Sleep Quest", n.text);
   });
+  // Tâches perso avec heure
+  scheduleCustomNotifications();
 }
 
 function scheduleCustomNotifications(){
-  // Les tâches perso avec heure déclenchent aussi une notif
-  // (vérifié dans checkNotifications via la même boucle de tick)
+  const now = new Date();
+  customTasks.forEach(task => {
+    if(!task.time) return;
+    const [th, tm] = task.time.split(":").map(Number);
+    const target = new Date();
+    target.setHours(th, tm, 0, 0);
+    const delay = target - now;
+    if(delay > 0) sendToSW(delay, "🌙 Sleep Quest", "⏰ " + task.label);
+  });
 }
+
+function sendToSW(delayMs, title, body){
+  if(!swReg || !swReg.active) {
+    // Fallback : setTimeout direct (fonctionne si la page reste ouverte)
+    setTimeout(() => {
+      if(Notification.permission === "granted")
+        new Notification(title, {body, icon:''});
+    }, delayMs);
+    return;
+  }
+  swReg.active.postMessage({ type:'SCHEDULE', delayMs, title, body });
+}
+
+function checkNotifications(){ /* remplacé par Service Worker */ }
 
 /* ══ ICÔNE APP (canvas) ══ */
 function generateAppIcon(){
@@ -1038,16 +1205,8 @@ function tick(){
 /* ══ INIT ══ */
 (function init(){
   resetIfNewDay();
-  // Reset notifs fired chaque jour
-  const savedNotifDate = localStorage.getItem("sq_notifs_date");
-  if(savedNotifDate !== todayStr()){
-    localStorage.removeItem("sq_notifs_fired");
-    notifsFired={};
-    localStorage.setItem("sq_notifs_date", todayStr());
-  }
   applyDayRules();
   generateAppIcon();
-  requestNotifPermission();
   const savedAvatar = load(AVATAR_KEY);
   if(savedAvatar) document.getElementById("avatar").innerText = savedAvatar;
   renderCustomTasks();
@@ -1056,7 +1215,9 @@ function tick(){
   checkBadges();
   update();
   tick();
-  setInterval(tick, 10000); // toutes les 10s
+  setInterval(tick, 10000);
+  // Service Worker + notifications
+  setupServiceWorker().then(() => requestNotifPermission());
 })();
 </script>
 </body>
