@@ -449,11 +449,20 @@
   <div class="step"><input type="checkbox" data-key="devoirs" onchange="onCheck(this)"> Devoirs faits</div>
 </div>
 
+<!-- SAC (juste après devoirs) -->
+<div class="card" id="sacCard" data-start="17" data-end="18">
+  <div class="card-title">18h00 — Sac d'école</div>
+  <div class="step">
+    <input type="checkbox" data-key="sac" onchange="onCheck(this)"> Sac d'école prêt et descendu
+  </div>
+</div>
+
 <!-- GUITARE -->
 <div class="card" id="guitareCard" data-start="18" data-end="19">
   <div class="card-title">18h20 — Guitare</div>
   <button onclick="startTimer()">▶ Lancer 5 min</button>
   <div class="timer" id="timer">05:00</div>
+  <div class="step"><input type="checkbox" data-key="guitare_done" onchange="onCheck(this)"> Guitare</div>
 </div>
 
 <!-- ORGANISATION -->
@@ -461,9 +470,6 @@
   <div class="card-title">18h30 — Organisation</div>
   <div class="step"><input type="checkbox" data-key="chambre" onchange="onCheck(this)"> Ranger ma chambre</div>
   <div class="step"><input type="checkbox" data-key="affaires_maison" onchange="onCheck(this)"> Ranger mes affaires dans la maison</div>
-  <div class="step" id="sacCard">
-    <input type="checkbox" data-key="sac" onchange="onCheck(this)"> Sac d'école prêt et descendu
-  </div>
 </div>
 
 <!-- ANIMAUX -->
@@ -893,7 +899,7 @@ function applyDayRules(){
   if(DAY===4) document.getElementById("guitareCard").style.display="none";
   if(DAY===5) document.getElementById("devoirsCard").style.display="none";
   if(DAY===5||DAY===6) document.getElementById("sacCard").style.display="none";
-  if(DAY!==0) document.getElementById("gouttiere").style.display="none";
+  // Gouttière : toute la semaine exceptionnellement (pas de masquage)
 }
 
 /* ══ TICK GLOBAL ══ */
