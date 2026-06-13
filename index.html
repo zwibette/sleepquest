@@ -586,13 +586,13 @@
 </div>
 
 <!-- DEVOIRS -->
-<div class="card" id="devoirsCard" data-start="17" data-end="18">
+<div class="card" id="devoirsCard" data-start="17" data-end="18" data-time="1065">
   <div class="card-title">17h45 — Devoirs</div>
   <div class="step"><input type="checkbox" data-key="devoirs" onchange="onCheck(this)"> Devoirs faits</div>
 </div>
 
 <!-- SAC (juste après devoirs) -->
-<div class="card" id="sacCard" data-start="17" data-end="18">
+<div class="card" id="sacCard" data-start="17" data-end="18" data-time="1080">
   <div class="card-title">18h00 — Sac d'école</div>
   <div class="step">
     <input type="checkbox" data-key="sac" onchange="onCheck(this)"> Sac d'école prêt et descendu
@@ -600,7 +600,7 @@
 </div>
 
 <!-- GUITARE -->
-<div class="card" id="guitareCard" data-start="18" data-end="19">
+<div class="card" id="guitareCard" data-start="18" data-end="19" data-time="1100">
   <div class="card-title">18h20 — Guitare</div>
   <button onclick="startTimer()">▶ Lancer 5 min</button>
   <div class="timer" id="timer">05:00</div>
@@ -608,32 +608,32 @@
 </div>
 
 <!-- ORGANISATION -->
-<div class="card" data-start="18" data-end="19">
+<div class="card" data-start="18" data-end="19" data-time="1110">
   <div class="card-title">18h30 — Organisation</div>
   <div class="step"><input type="checkbox" data-key="chambre" onchange="onCheck(this)"> Ranger ma chambre</div>
   <div class="step"><input type="checkbox" data-key="affaires_maison" onchange="onCheck(this)"> Ranger mes affaires dans la maison</div>
 </div>
 
 <!-- ANIMAUX -->
-<div class="card" data-start="18" data-end="19">
+<div class="card" data-start="18" data-end="19" data-time="1135">
   <div class="card-title">18h55 — Animaux</div>
   <div class="step"><input type="checkbox" data-key="cochons" onchange="onCheck(this)"> Je me suis occupé des cochons d'Inde</div>
 </div>
 
 <!-- DÎNER -->
-<div class="card" data-start="19" data-end="20">
+<div class="card" data-start="19" data-end="20" data-time="1140">
   <div class="card-title">19h00 — Dîner calme</div>
   <div class="small">Pas d'écrans à table 🍽️</div>
 </div>
 
 <!-- TEMPS CALME -->
-<div class="card" data-start="19" data-end="20">
+<div class="card" data-start="19" data-end="20" data-time="1185">
   <div class="card-title">19h45 — Temps calme</div>
   <div class="small">✔ Lecture, dessin, LEGO, musique douce<br>❌ vidéos rapides / jeux</div>
 </div>
 
 <!-- ROUTINE RESPIRATION -->
-<div class="card urgent-keep" data-start="20" data-end="21">
+<div class="card urgent-keep" data-start="20" data-end="21" data-time="1215">
   <div class="card-title">20h15 — Routine respiration</div>
   <div class="step"><input type="checkbox" data-key="lavage_nez" onchange="onCheck(this)"> Lavage de nez</div>
   <div class="step"><input type="checkbox" data-key="exercices_langue" onchange="onCheck(this)"> Exercices de langue</div>
@@ -641,7 +641,7 @@
 </div>
 
 <!-- ROUTINE -->
-<div class="card urgent-keep" data-start="20" data-end="21">
+<div class="card urgent-keep" data-start="20" data-end="21" data-time="1245">
   <div class="card-title">20h45 — Routine du corps</div>
   <div class="step"><input type="checkbox" data-key="douche" onchange="onCheck(this)"> Douche</div>
   <div class="step"><input type="checkbox" data-key="dents" onchange="onCheck(this)"> Brossage dents</div>
@@ -653,13 +653,13 @@
 </div>
 
 <!-- LECTURE -->
-<div class="card" data-start="21" data-end="22">
+<div class="card" data-start="21" data-end="22" data-time="1275">
   <div class="card-title">21h15–22h — Lecture calme</div>
   <div class="small">✔ Fantastique doux / manga calme<br>❌ horreur / stress / action intense</div>
 </div>
 
 <!-- SOMMEIL -->
-<div class="card urgent-keep" data-start="22" data-end="24">
+<div class="card urgent-keep" data-start="22" data-end="24" data-time="1320">
   <div class="card-title">22h00 — Sommeil</div>
   <div class="step"><input type="checkbox" data-key="bruit_blanc" onchange="onCheck(this)"> Écoute des bruits blancs</div>
   <div class="small">"Tu es en sécurité, tout le monde est là pour toi, tu peux dormir paisiblement."</div>
@@ -778,40 +778,48 @@ function restoreState(){
 let customTasks = load(CUSTOM_KEY) || [];
 
 function renderCustomTasks(){
-  const list = document.getElementById("custom-list");
-  list.innerHTML="";
-  // Tri par heure
-  const sorted = customTasks.map((t,i)=>({...t,origIdx:i}))
-    .sort((a,b)=>(a.time||"99:99").localeCompare(b.time||"99:99"));
-  sorted.forEach(task=>{
-    const i = task.origIdx;
-    const div = document.createElement("div");
-    div.className="step";
-    const key = "custom_"+i;
-    const state = load(STORAGE_KEY)||{};
-    const timeLabel = task.time ? `<span style="font-size:11px;color:var(--cyan);margin-right:6px;font-weight:bold;">${task.time}</span>` : "";
-    div.innerHTML=`<input type="checkbox" data-key="${key}" onchange="onCheck(this)" ${state[key]?"checked":""}>${timeLabel}${task.label}
-      <span onclick="removeCustomTask(${i})" style="margin-left:auto;cursor:pointer;color:var(--muted);font-size:12px;">✕</span>`;
-    list.appendChild(div);
+  // Supprimer les anciennes cartes custom
+  document.querySelectorAll(".card.custom-card").forEach(c => c.remove());
+  if(!customTasks || customTasks.length === 0) return;
+
+  const state = load(STORAGE_KEY) || {};
+
+  customTasks.forEach((task, i) => {
+    const tMin = timeToMin(task.time);
+    const heure = Math.floor(tMin/60);
+    const card = document.createElement("div");
+    card.className = "card custom-card";
+    card.dataset.time    = tMin;
+    card.dataset.timeStr = task.time || "";
+    card.dataset.start   = heure;
+    card.dataset.end     = heure + 1;
+    const timeLabel = task.time ? task.time + " — " : "";
+    card.innerHTML =
+      `<div class="card-title">${timeLabel}${task.label}</div>` +
+      `<div class="step">` +
+        `<input type="checkbox" data-key="custom_${i}" onchange="onCheck(this)" ${state["custom_"+i] ? "checked" : ""}> ${task.label}` +
+        `<span onclick="removeCustomTask(${i})" style="margin-left:auto;cursor:pointer;color:var(--muted);font-size:12px;">✕</span>` +
+      `</div>`;
+    insertCardInOrder(card, tMin < 9999 ? tMin : 1380); // sans heure → fin de liste
   });
 }
 
 function addCustomTask(){
-  const inp = document.getElementById("custom-task-input");
+  const inp  = document.getElementById("custom-task-input");
   const timeInp = document.getElementById("custom-task-time");
-  const val = inp.value.trim();
+  const val  = inp.value.trim();
   if(!val) return;
   customTasks.push({ label: val, time: timeInp.value || "" });
   save(CUSTOM_KEY, customTasks);
-  inp.value="";
-  timeInp.value="";
+  inp.value = "";
+  timeInp.value = "";
   renderCustomTasks();
   update();
   scheduleCustomNotifications();
 }
 
 function removeCustomTask(i){
-  customTasks.splice(i,1);
+  customTasks.splice(i, 1);
   save(CUSTOM_KEY, customTasks);
   renderCustomTasks();
   update();
@@ -1252,34 +1260,62 @@ function applyDayRules(){
   // Gouttière : toute la semaine exceptionnellement (pas de masquage)
 }
 
+/* ══ UTILITAIRE : insertion dans l'ordre horaire ══ */
+function timeToMin(timeStr){
+  if(!timeStr) return 9999;
+  const [h,m] = timeStr.split(":").map(Number);
+  return h*60 + m;
+}
+
+function insertCardInOrder(card, timeMin){
+  // Trouver toutes les cartes du planning (fixes + dynamiques), hors guide/stats/badges/avatar
+  const allCards = Array.from(document.querySelectorAll(".card[data-time], .card.perm-card, .card.custom-card"));
+  // Trouver la première carte dont data-time > timeMin
+  let inserted = false;
+  for(const c of allCards){
+    const t = parseInt(c.dataset.time) || timeToMin(c.dataset.timeStr) || 9999;
+    if(timeMin < t){
+      c.parentNode.insertBefore(card, c);
+      inserted = true;
+      break;
+    }
+  }
+  // Si aucune carte après → insérer avant le conteneur perm + customCard
+  if(!inserted){
+    const anchor = document.getElementById("perm-cards-container");
+    anchor.parentNode.insertBefore(card, anchor);
+  }
+}
+
 /* ══ TÂCHES PERMANENTES ══ */
 let permTasks = load(PERM_KEY) || [];
 
 function renderPermCards(){
-  const container = document.getElementById("perm-cards-container");
-  if(!container) return;
-  container.innerHTML = "";
-  const raw = localStorage.getItem(PERM_KEY);
-  if(!raw || raw === "[]" || raw === "null") return;
-  try { permTasks = JSON.parse(raw); } catch(e){ return; }
+  // Supprimer les anciennes cartes permanentes
+  document.querySelectorAll(".card.perm-card").forEach(c => c.remove());
+  document.getElementById("perm-cards-container").innerHTML = "";
+
   if(!permTasks || permTasks.length === 0) return;
 
   const sorted = permTasks
     .map((t,i) => ({...t, origIdx:i}))
-    .sort((a,b) => (a.time||"99:99").localeCompare(b.time||"99:99"));
+    .sort((a,b) => timeToMin(a.time) - timeToMin(b.time));
 
   sorted.forEach(task => {
-    const heure = task.time ? parseInt(task.time.split(":")[0]) : 20;
+    const tMin = timeToMin(task.time);
+    const heure = Math.floor(tMin/60);
     const card = document.createElement("div");
     card.className = "card perm-card";
-    card.dataset.start = heure;
-    card.dataset.end   = heure + 1;
-    const label = task.label || "";
+    card.dataset.time    = tMin;
+    card.dataset.timeStr = task.time || "";
+    card.dataset.start   = heure;
+    card.dataset.end     = heure + 1;
+    const label    = task.label || "";
     const timeLabel = task.time ? task.time + " — " : "";
     card.innerHTML =
       `<div class="card-title">${timeLabel}${label}</div>` +
       `<div class="step"><input type="checkbox" data-key="perm_${task.origIdx}" onchange="onCheck(this)"> ${label}</div>`;
-    container.appendChild(card);
+    insertCardInOrder(card, tMin);
   });
 
   restoreState();
