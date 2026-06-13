@@ -656,6 +656,9 @@
   <div class="small">"Tu es en sécurité, tout le monde est là pour toi, tu peux dormir paisiblement."</div>
 </div>
 
+<!-- TÂCHES PERMANENTES (injectées ici) -->
+<div id="perm-cards-container"></div>
+
 <!-- TÂCHES PERSO -->
 <div class="card" id="customCard">
   <div class="card-title">📝 Tâches du soir (perso)</div>
@@ -1193,30 +1196,29 @@ function applyDayRules(){
 let permTasks = load(PERM_KEY) || [];
 
 function renderPermCards(){
-  // Supprimer les cartes dynamiques précédentes
-  document.querySelectorAll(".card.perm-card").forEach(c=>c.remove());
-  if(permTasks.length===0) return;
+  const container = document.getElementById("perm-cards-container");
+  container.innerHTML = "";
+  if(permTasks.length === 0) return;
 
-  // Trier par heure
-  const sorted = [...permTasks].sort((a,b)=>(a.time||"99:99").localeCompare(b.time||"99:99"));
-  const customCard = document.getElementById("customCard");
+  const sorted = [...permTasks]
+    .map((t,i)=>({...t, origIdx:i}))
+    .sort((a,b)=>(a.time||"99:99").localeCompare(b.time||"99:99"));
 
-  sorted.forEach((task,i)=>{
+  sorted.forEach((task, sortedIdx)=>{
     const heure = task.time ? parseInt(task.time.split(":")[0]) : 20;
     const card = document.createElement("div");
-    card.className="card perm-card";
+    card.className = "card perm-card";
     card.dataset.start = heure;
-    card.dataset.end   = heure+1;
-    card.innerHTML=`
-      <div class="card-title">${task.time ? task.time+" — " : ""}${task.label}</div>
+    card.dataset.end   = heure + 1;
+    card.innerHTML = `
+      <div class="card-title">${task.time ? task.time + " — " : ""}${task.label}</div>
       <div class="step">
-        <input type="checkbox" data-key="perm_${i}" onchange="onCheck(this)"> ${task.label}
+        <input type="checkbox" data-key="perm_${task.origIdx}" onchange="onCheck(this)"> ${task.label}
       </div>`;
-    // Insérer avant la carte tâches perso
-    customCard.parentNode.insertBefore(card, customCard);
+    container.appendChild(card);
   });
 
-  restoreState(); // recocher les cases si déjà faites
+  restoreState();
 }
 
 /* ══ PANNEAU SETTINGS ══ */
