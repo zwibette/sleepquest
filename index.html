@@ -909,7 +909,7 @@ function updateCardDone(){
   });
 }
 
-/* ══ NOTIFICATIONS VIA SERVICE WORKER ══ */
+/* ══ NOTIFICATIONS ══ */
 const NOTIF_SCHEDULE = [
   { h:17, m:45, text:"📚 C'est l'heure des devoirs !" },
   { h:18, m:0,  text:"🎒 Prépare ton sac d'école !" },
@@ -922,17 +922,17 @@ const NOTIF_SCHEDULE = [
   { h:22, m:0,  text:"🌙 C'est l'heure de dormir. Bonne nuit !" },
 ];
 
-let swReg = null;
+let wakeLock = null;
 
-async function setupServiceWorker(){
-  if(!("serviceWorker" in navigator)) return;
+async function acquireWakeLock(){
+  if(!("wakeLock" in navigator)) return;
   try {
-    swReg = await navigator.serviceWorker.register('./sw.js', { scope: './' });
-    await navigator.serviceWorker.ready;
-    console.log('SW prêt');
-  } catch(err){
-    console.warn('SW échec:', err);
-  }
+    wakeLock = await navigator.wakeLock.request("screen");
+    // Ré-acquérir si le wake lock est libéré (ex: onglet mis en arrière-plan puis revenu)
+    wakeLock.addEventListener("release", () => {
+      setTimeout(acquireWakeLock, 2000);
+    });
+  } catch(e){ /* pas supporté ou refusé */ }
 }
 
 async function requestNotifPermission(){
@@ -945,43 +945,62 @@ async function requestNotifPermission(){
   }
 }
 
+function fireNotif(title, body){
+  if(Notification.permission !== "granted") return;
+  // Essayer via SW d'abord (plus fiable), sinon direct
+  if(swReg && swReg.active){
+    swReg.active.postMessage({ type:"SHOW_NOW", title, body });
+  } else {
+    new Notification(title, { body, icon:"./icon-192.png", vibrate:[200,100,200] });
+  }
+}
+
+let notifTimers = [];
+
 function scheduleAllNotifications(){
+  // Annuler les timers précédents
+  notifTimers.forEach(t => clearTimeout(t));
+  notifTimers = [];
+
   const now = new Date();
+
   NOTIF_SCHEDULE.forEach(n => {
     const target = new Date();
     target.setHours(n.h, n.m, 0, 0);
     const delay = target - now;
-    if(delay > 0) sendToSW(delay, "🌙 Sleep Quest", n.text);
+    if(delay > 0){
+      const tid = setTimeout(() => fireNotif("🌙 Sleep Quest", n.text), delay);
+      notifTimers.push(tid);
+    }
   });
-  // Tâches perso avec heure
-  scheduleCustomNotifications();
-}
 
-function scheduleCustomNotifications(){
-  const now = new Date();
+  // Tâches perso
   customTasks.forEach(task => {
     if(!task.time) return;
     const [th, tm] = task.time.split(":").map(Number);
     const target = new Date();
     target.setHours(th, tm, 0, 0);
-    const delay = target - now;
-    if(delay > 0) sendToSW(delay, "🌙 Sleep Quest", "⏰ " + task.label);
+    const delay = target - new Date();
+    if(delay > 0){
+      const tid = setTimeout(() => fireNotif("🌙 Sleep Quest", "⏰ " + task.label), delay);
+      notifTimers.push(tid);
+    }
   });
 }
 
-function sendToSW(delayMs, title, body){
-  if(!swReg || !swReg.active) {
-    // Fallback : setTimeout direct (fonctionne si la page reste ouverte)
-    setTimeout(() => {
-      if(Notification.permission === "granted")
-        new Notification(title, {body, icon:''});
-    }, delayMs);
-    return;
-  }
-  swReg.active.postMessage({ type:'SCHEDULE', delayMs, title, body });
+function scheduleCustomNotifications(){ scheduleAllNotifications(); }
+
+let swReg = null;
+
+async function setupServiceWorker(){
+  if(!("serviceWorker" in navigator)) return;
+  try {
+    swReg = await navigator.serviceWorker.register('./sw.js', { scope: './' });
+    await navigator.serviceWorker.ready;
+  } catch(err){ console.warn('SW:', err); }
 }
 
-function checkNotifications(){ /* remplacé par Service Worker */ }
+function checkNotifications(){ /* géré par setTimeout */ }
 
 /* ══ ICÔNE APP (canvas) ══ */
 function generateAppIcon(){
@@ -1297,6 +1316,7 @@ function tick(){
   tick();
   setInterval(tick, 10000);
   setupServiceWorker().then(() => requestNotifPermission());
+  acquireWakeLock();
 })();
 </script>
 </body>
