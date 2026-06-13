@@ -283,9 +283,6 @@
     from{box-shadow:0 0 6px #ff444433;}
     to{box-shadow:0 0 20px #ff444488;}
   }
-  body.urgent-mode .card:not(.urgent-keep){
-    display:none !important;
-  }
   body.urgent-mode .card.urgent-keep{
     border-left-color: var(--urgent);
     box-shadow: 0 0 14px #ff444422;
@@ -1192,6 +1189,89 @@ function applyDayRules(){
   // Gouttière : toute la semaine exceptionnellement (pas de masquage)
 }
 
+/* ══ TÂCHES PERMANENTES ══ */
+let permTasks = load(PERM_KEY) || [];
+
+function renderPermCards(){
+  // Supprimer les cartes dynamiques précédentes
+  document.querySelectorAll(".card.perm-card").forEach(c=>c.remove());
+  if(permTasks.length===0) return;
+
+  // Trier par heure
+  const sorted = [...permTasks].sort((a,b)=>(a.time||"99:99").localeCompare(b.time||"99:99"));
+  const customCard = document.getElementById("customCard");
+
+  sorted.forEach((task,i)=>{
+    const heure = task.time ? parseInt(task.time.split(":")[0]) : 20;
+    const card = document.createElement("div");
+    card.className="card perm-card";
+    card.dataset.start = heure;
+    card.dataset.end   = heure+1;
+    card.innerHTML=`
+      <div class="card-title">${task.time ? task.time+" — " : ""}${task.label}</div>
+      <div class="step">
+        <input type="checkbox" data-key="perm_${i}" onchange="onCheck(this)"> ${task.label}
+      </div>`;
+    // Insérer avant la carte tâches perso
+    customCard.parentNode.insertBefore(card, customCard);
+  });
+
+  restoreState(); // recocher les cases si déjà faites
+}
+
+/* ══ PANNEAU SETTINGS ══ */
+let permTasksDraft = []; // copie de travail pendant l'édition
+
+function toggleSettings(){
+  const btn   = document.getElementById("settings-btn");
+  const panel = document.getElementById("settings-panel");
+  const isOpen = panel.classList.contains("open");
+  if(isOpen){
+    panel.classList.remove("open");
+    btn.classList.remove("open");
+  } else {
+    permTasksDraft = permTasks.map(t=>({...t}));
+    renderSettingsList();
+    panel.classList.add("open");
+    btn.classList.add("open");
+  }
+}
+
+function renderSettingsList(){
+  const list = document.getElementById("perm-list");
+  list.innerHTML="";
+  const sorted = [...permTasksDraft].sort((a,b)=>(a.time||"99:99").localeCompare(b.time||"99:99"));
+  sorted.forEach((task, i)=>{
+    const origIdx = permTasksDraft.indexOf(task);
+    const row = document.createElement("div");
+    row.className="perm-row";
+    row.innerHTML=`
+      <input type="time" value="${task.time||""}" onchange="permTasksDraft[${origIdx}].time=this.value;renderSettingsList()">
+      <input type="text" value="${task.label}" onchange="permTasksDraft[${origIdx}].label=this.value">
+      <button class="del-btn" onclick="permTasksDraft.splice(${origIdx},1);renderSettingsList()">✕</button>`;
+    list.appendChild(row);
+  });
+}
+
+function addPermTask(){
+  const t = document.getElementById("perm-new-time").value;
+  const l = document.getElementById("perm-new-label").value.trim();
+  if(!l) return;
+  permTasksDraft.push({ time:t, label:l });
+  document.getElementById("perm-new-time").value="";
+  document.getElementById("perm-new-label").value="";
+  renderSettingsList();
+}
+
+function saveAndCloseSettings(){
+  permTasks = permTasksDraft.map(t=>({...t}));
+  save(PERM_KEY, permTasks);
+  renderPermCards();
+  scheduleCustomNotifications(); // reprogrammer les notifs si des heures ont changé
+  toggleSettings();
+  update();
+}
+
 /* ══ TICK GLOBAL ══ */
 function tick(){
   updateCountdown();
@@ -1210,13 +1290,13 @@ function tick(){
   const savedAvatar = load(AVATAR_KEY);
   if(savedAvatar) document.getElementById("avatar").innerText = savedAvatar;
   renderCustomTasks();
+  renderPermCards();
   restoreState();
   renderStats();
   checkBadges();
   update();
   tick();
   setInterval(tick, 10000);
-  // Service Worker + notifications
   setupServiceWorker().then(() => requestNotifPermission());
 })();
 </script>
