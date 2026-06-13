@@ -927,27 +927,7 @@ let swReg = null;
 async function setupServiceWorker(){
   if(!("serviceWorker" in navigator)) return;
   try {
-    // Inline Service Worker via Blob URL
-    const swCode = `
-self.addEventListener('message', e => {
-  if(e.data && e.data.type === 'SCHEDULE'){
-    const { delayMs, title, body } = e.data;
-    setTimeout(() => {
-      self.registration.showNotification(title, {
-        body,
-        icon: '/icon-192.png',
-        badge: '/icon-192.png',
-        vibrate: [200, 100, 200],
-        tag: 'sleepquest-' + Date.now()
-      });
-    }, delayMs);
-  }
-});
-self.addEventListener('notificationclick', e => { e.notification.close(); });
-    `;
-    const blob = new Blob([swCode], {type:'application/javascript'});
-    const swUrl = URL.createObjectURL(blob);
-    swReg = await navigator.serviceWorker.register(swUrl, {scope:'/'});
+    swReg = await navigator.serviceWorker.register('./sw.js', { scope: './' });
     await navigator.serviceWorker.ready;
     console.log('SW prêt');
   } catch(err){
