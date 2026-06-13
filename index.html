@@ -382,18 +382,18 @@
 
   /* ══ ROUE CRANTÉE + PANNEAU SETTINGS ══ */
   #settings-btn{
-    position:fixed; top:14px; left:14px; z-index:200;
-    width:40px; height:40px; border-radius:50%;
-    background:var(--card2); border:1.5px solid #2a2f4a;
+    position:absolute; top:14px; left:14px; z-index:200;
+    width:30px; height:30px; border-radius:50%;
+    background:transparent; border:1px solid #2a2f4a;
     display:flex; align-items:center; justify-content:center;
-    font-size:20px; cursor:pointer;
-    transition: transform 0.4s ease, border-color 0.2s;
-    box-shadow: 0 2px 10px #00000066;
+    font-size:15px; cursor:pointer;
+    transition: transform 0.4s ease, opacity 0.2s, border-color 0.2s;
     padding:0; margin:0;
     color: var(--muted);
+    opacity:0.45;
   }
-  #settings-btn:hover{ border-color:var(--cyan); color:var(--cyan); }
-  #settings-btn.open{ transform:rotate(90deg); border-color:var(--cyan); color:var(--cyan); }
+  #settings-btn:hover, #settings-btn.open{ opacity:1; border-color:var(--cyan); color:var(--cyan); }
+  #settings-btn.open{ transform:rotate(90deg); }
 
   #settings-panel{
     display:none;
@@ -480,10 +480,12 @@
 </head>
 <body>
 
-<!-- ROUE CRANTÉE -->
-<button id="settings-btn" onclick="toggleSettings()" title="Réglages">⚙️</button>
+<!-- ROUE CRANTÉE + TITRE -->
+<div style="position:relative;">
+  <button id="settings-btn" onclick="toggleSettings()" title="Réglages">⚙️</button>
+  <h1 class="main-title">🌙 Sleep Quest</h1>
+</div>
 
-<!-- PANNEAU SETTINGS -->
 <div id="settings-panel">
   <div id="settings-inner">
     <div class="settings-title">⚙️ Réglages du planning</div>
@@ -510,8 +512,6 @@
   <div id="sleep-sub">"Tu es en sécurité, tout le monde est là pour toi, tu peux dormir paisiblement."</div>
   <button id="close-overlay" onclick="closeOverlay()">Fermer</button>
 </div>
-
-<h1 class="main-title">🌙 Sleep Quest</h1>
 
 <!-- COUNTDOWN 22H -->
 <div id="countdown-bar">Objectif sommeil : <span id="countdown-txt">--:--</span></div>
@@ -1240,15 +1240,17 @@ function toggleSettings(){
 function renderSettingsList(){
   const list = document.getElementById("perm-list");
   list.innerHTML="";
-  const sorted = [...permTasksDraft].sort((a,b)=>(a.time||"99:99").localeCompare(b.time||"99:99"));
-  sorted.forEach((task, i)=>{
-    const origIdx = permTasksDraft.indexOf(task);
+  const sorted = permTasksDraft
+    .map((t,i)=>({...t, origIdx:i}))
+    .sort((a,b)=>(a.time||"99:99").localeCompare(b.time||"99:99"));
+  sorted.forEach(task=>{
+    const i = task.origIdx;
     const row = document.createElement("div");
     row.className="perm-row";
     row.innerHTML=`
-      <input type="time" value="${task.time||""}" onchange="permTasksDraft[${origIdx}].time=this.value;renderSettingsList()">
-      <input type="text" value="${task.label}" onchange="permTasksDraft[${origIdx}].label=this.value">
-      <button class="del-btn" onclick="permTasksDraft.splice(${origIdx},1);renderSettingsList()">✕</button>`;
+      <input type="time" value="${task.time||""}" onchange="permTasksDraft[${i}].time=this.value">
+      <input type="text" value="${task.label}" onchange="permTasksDraft[${i}].label=this.value">
+      <button class="del-btn" onclick="permTasksDraft.splice(${i},1);renderSettingsList()">✕</button>`;
     list.appendChild(row);
   });
 }
