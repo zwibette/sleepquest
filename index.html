@@ -1197,8 +1197,14 @@ let permTasks = load(PERM_KEY) || [];
 
 function renderPermCards(){
   const container = document.getElementById("perm-cards-container");
-  if(!container){ return; }
+  if(!container){ alert("ERREUR: perm-cards-container introuvable"); return; }
   container.innerHTML = "";
+  const raw = localStorage.getItem(PERM_KEY);
+  if(!raw || raw === "[]" || raw === "null"){ 
+    container.innerHTML = "<div style='color:orange;padding:8px;font-size:12px'>DEBUG: permTasks vide — localStorage: "+raw+"</div>";
+    return; 
+  }
+  try { permTasks = JSON.parse(raw); } catch(e){ alert("JSON invalide: "+raw); return; }
   if(!permTasks || permTasks.length === 0) return;
 
   const sorted = permTasks
@@ -1276,7 +1282,8 @@ function addPermTask(){
 function saveAndCloseSettings(){
   permTasks = permTasksDraft.map(t => ({...t}));
   save(PERM_KEY, permTasks);
-  // Rechargement de la page : le plus fiable sur Android PWA
+  const check = localStorage.getItem(PERM_KEY);
+  alert("Sauvegardé: " + check);
   window.location.reload();
 }
 
