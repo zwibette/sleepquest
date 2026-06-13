@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>Sleep Quest</title>
+<title>Sleep Quest v8</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Sleep Quest">
@@ -1276,10 +1276,8 @@ function addPermTask(){
 function saveAndCloseSettings(){
   permTasks = permTasksDraft.map(t => ({...t}));
   save(PERM_KEY, permTasks);
-  closeSettings();
-  renderPermCards();
-  update();
-  scheduleCustomNotifications();
+  // Rechargement de la page : le plus fiable sur Android PWA
+  window.location.reload();
 }
 
 
