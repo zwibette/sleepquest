@@ -362,6 +362,42 @@
   /* ══ RECORD ══ */
   #record-line{ font-size:11px; color:var(--muted); margin-top:3px; }
 
+  /* ══ DÉFOULOIR ══ */
+  #soundpad-grid{
+    display:flex; gap:10px; justify-content:space-between; margin-top:4px;
+  }
+  .sound-btn{
+    flex:1; aspect-ratio:1;
+    font-size:28px;
+    border-radius:14px;
+    background: linear-gradient(135deg,#1a1f3a,#0d1228);
+    border: 1.5px solid #2a2f4a;
+    color:white; cursor:pointer; padding:0;
+    display:flex; align-items:center; justify-content:center;
+    flex-direction:column; gap:3px;
+    transition: transform 0.08s, box-shadow 0.08s, border-color 0.1s;
+    position:relative; overflow:hidden;
+  }
+  .sound-btn::after{
+    content: attr(data-label);
+    font-size:9px; color:var(--muted);
+    font-family:'Noto Sans JP',sans-serif;
+    font-weight:normal;
+  }
+  .sound-btn:active{
+    transform:scale(0.88);
+  }
+  .sound-btn.pop{
+    border-color:var(--cyan);
+    box-shadow:0 0 18px var(--cyan)88;
+    animation: btnpop 0.3s ease;
+  }
+  @keyframes btnpop{
+    0%{ transform:scale(1); }
+    40%{ transform:scale(1.18); }
+    100%{ transform:scale(1); }
+  }
+
   /* ══ CARTE COMPLÈTE (estompée) ══ */
   .card.done{
     opacity: 0.38;
@@ -676,6 +712,18 @@
     <input id="custom-task-time" type="time" placeholder="heure">
     <input id="custom-task-input" type="text" placeholder="Ajouter une tâche..." maxlength="60">
     <button onclick="addCustomTask()">+</button>
+  </div>
+</div>
+
+<!-- DÉFOULOIR SONORE -->
+<div class="card" id="soundpad-card">
+  <div class="card-title">🎵 Défouloir</div>
+  <div id="soundpad-grid">
+    <button class="sound-btn" onclick="playPad('laser')"    data-label="Laser">⚡</button>
+    <button class="sound-btn" onclick="playPad('powerup')"  data-label="Power Up">🌟</button>
+    <button class="sound-btn" onclick="playPad('coin')"     data-label="Coin">🪙</button>
+    <button class="sound-btn" onclick="playPad('dragon')"   data-label="Dragon">🐉</button>
+    <button class="sound-btn" onclick="playPad('boing')"    data-label="Boing">🤪</button>
   </div>
 </div>
 
@@ -1397,7 +1445,93 @@ function tick(){
   checkNotifications();
 }
 
-/* ══ INIT ══ */
+/* ══ DÉFOULOIR SONORE ══ */
+function playPad(type){
+  const btn = event.currentTarget;
+  btn.classList.remove("pop");
+  void btn.offsetWidth;
+  btn.classList.add("pop");
+  if(navigator.vibrate) navigator.vibrate(30);
+
+  const ac = new (window.AudioContext || window.webkitAudioContext)();
+  const master = ac.createGain();
+  master.connect(ac.destination);
+
+  if(type === "laser"){
+    // Laser descendant
+    const osc = ac.createOscillator();
+    const g = ac.createGain();
+    osc.connect(g); g.connect(master);
+    osc.type = "sawtooth";
+    osc.frequency.setValueAtTime(1200, ac.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(120, ac.currentTime + 0.4);
+    g.gain.setValueAtTime(0.25, ac.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.4);
+    osc.start(); osc.stop(ac.currentTime + 0.4);
+
+  } else if(type === "powerup"){
+    // Power-up montant en escalier
+    [0, 0.1, 0.2, 0.32].forEach((t, i) => {
+      const osc = ac.createOscillator();
+      const g = ac.createGain();
+      osc.connect(g); g.connect(master);
+      osc.type = "square";
+      const freqs = [330, 440, 550, 880];
+      osc.frequency.value = freqs[i];
+      g.gain.setValueAtTime(0.15, ac.currentTime + t);
+      g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + t + 0.09);
+      osc.start(ac.currentTime + t);
+      osc.stop(ac.currentTime + t + 0.09);
+    });
+
+  } else if(type === "coin"){
+    // Pièce Mario-like
+    const osc = ac.createOscillator();
+    const g = ac.createGain();
+    osc.connect(g); g.connect(master);
+    osc.type = "square";
+    osc.frequency.setValueAtTime(988, ac.currentTime);
+    osc.frequency.setValueAtTime(1319, ac.currentTime + 0.08);
+    g.gain.setValueAtTime(0.2, ac.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.35);
+    osc.start(); osc.stop(ac.currentTime + 0.35);
+
+  } else if(type === "dragon"){
+    // Rugissement grave + distorsion
+    const buf = ac.createBuffer(1, ac.sampleRate * 0.6, ac.sampleRate);
+    const d = buf.getChannelData(0);
+    for(let i = 0; i < d.length; i++){
+      const t2 = i / ac.sampleRate;
+      d[i] = Math.sin(2 * Math.PI * 80 * t2 * (1 - t2 * 0.8))
+           * Math.sin(2 * Math.PI * 3 * t2)  // vibrato
+           * Math.max(0, 1 - t2 * 1.8);
+    }
+    const src = ac.createBufferSource();
+    src.buffer = buf;
+    const wave = ac.createWaveShaper();
+    const curve = new Float32Array(256);
+    for(let i = 0; i < 256; i++) curve[i] = Math.tanh((i - 128) / 20);
+    wave.curve = curve;
+    src.connect(wave); wave.connect(master);
+    master.gain.value = 0.6;
+    src.start(); src.stop(ac.currentTime + 0.6);
+
+  } else if(type === "boing"){
+    // Boing comique
+    const osc = ac.createOscillator();
+    const g = ac.createGain();
+    osc.connect(g); g.connect(master);
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(150, ac.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(600, ac.currentTime + 0.12);
+    osc.frequency.exponentialRampToValueAtTime(200, ac.currentTime + 0.35);
+    g.gain.setValueAtTime(0.3, ac.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.45);
+    osc.start(); osc.stop(ac.currentTime + 0.45);
+  }
+}
+
+
 (function init(){
   resetIfNewDay();
   applyDayRules();
