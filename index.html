@@ -2,1314 +2,1798 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>Sleep Quest</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0d1a0f">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Sleep Quest">
-<link rel="apple-touch-icon" id="app-icon" sizes="180x180" href="">
+<meta name="apple-mobile-web-app-title" content="Jardin Vivant">
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/icon-192.png">
+<title>Jardin Vivant</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;1,9..144,200&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
-  /* ══════════════════════════════════════════
-     BASE
-  ══════════════════════════════════════════ */
-  @import url('https://fonts.googleapis.com/css2?family=Bangers&family=Noto+Sans+JP:wght@400;700&display=swap');
+/* ── PALETTE TEAL — dérivée de #20847d ── */
+:root{
+  --bg:#080f0f;--bg3:#0d1f1e;--surface:#102422;--surface2:#153030;
+  --border:#1a3d3a;--border2:#214d49;
+  --text:#d0eeec;--text-dim:#7ab8b4;--text-muted:#2d6b66;
+  --accent:#2dd4c8;--accent2:#5ee8de;
+  --teal-dark:#1a4a47;--teal-mid:#20847d;--teal-light:rgba(45,212,200,.1);
+  --amber:#fbbf24;--amber-light:rgba(251,191,36,.1);
+  --red:#f87171;--red-light:rgba(248,113,113,.1);
+  --blue:#60a5fa;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Mono',monospace;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background:
+  radial-gradient(ellipse at 20% 20%,rgba(32,132,125,.06) 0%,transparent 50%),
+  radial-gradient(ellipse at 80% 80%,rgba(45,212,200,.04) 0%,transparent 50%);
+  pointer-events:none;z-index:0}
+header{position:sticky;top:0;z-index:100;background:rgba(8,15,15,.95);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 16px}
+.header-inner{max-width:900px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:56px}
+.logo{font-family:'Fraunces',serif;font-size:1.2rem;font-weight:300;color:var(--accent);display:flex;align-items:center;gap:8px}
+.logo-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.8)}}
+.header-right{display:flex;align-items:center;gap:10px}
+.header-status{font-size:.62rem;color:var(--text-muted);letter-spacing:.08em;text-transform:uppercase}
+.status-ok{color:var(--accent)}.status-err{color:var(--red)}.status-warn{color:var(--amber)}
+.refresh-btn{background:var(--surface);border:1px solid var(--border);color:var(--text-dim);width:34px;height:34px;border-radius:8px;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s}
+.refresh-btn:hover{border-color:var(--accent);color:var(--accent)}
+.refresh-btn.spinning{animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+main{max-width:900px;margin:0 auto;padding:16px;position:relative;z-index:1}
 
-  :root{
-    --bg1:#0b1026; --bg2:#05060f;
-    --card:#151a33; --card2:#1a2040;
-    --cyan:#7cf7ff; --purple:#a66bff;
-    --pink:#ff6bcb; --yellow:#ffe066;
-    --text:#e8eaf6; --muted:#8892b0;
-    --urgent:#ff4444;
-    --blue-filter: brightness(1) sepia(0.15) hue-rotate(190deg);
-  }
-  body.night-mode{
-    --bg1:#050810; --bg2:#020308;
-    --card:#0d1020; --card2:#111525;
-    --blue-filter: brightness(0.85) sepia(0.3) hue-rotate(200deg) saturate(0.7);
-    filter: var(--blue-filter);
-  }
+/* ── NAV PRINCIPAL ── */
+.nav-tabs{display:flex;gap:3px;margin-bottom:8px;background:#0d2826;padding:3px;border-radius:10px;border:1px solid #1a4040}
+.tab{flex:1;padding:9px 4px;border:none;background:transparent;color:var(--text-muted);font-family:'DM Mono',monospace;font-size:.68rem;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;border-radius:7px;transition:all .2s}
+.tab:hover:not(.active){color:var(--accent)}
+.tab.active{background:var(--teal-dark);color:var(--accent);border:1px solid rgba(45,212,200,.35)}
 
-  *{ box-sizing:border-box; }
-  body{
-    margin:0;
-    font-family:'Noto Sans JP', Arial, sans-serif;
-    background: linear-gradient(160deg, var(--bg1), var(--bg2));
-    color: var(--text);
-    padding:12px 14px 80px;
-    min-height:100vh;
-  }
+/* ── NAV SECONDAIRE ── */
+.nav-sub{display:flex;gap:3px;margin-bottom:16px;background:#091f1e;padding:3px;border-radius:8px;border:1px solid #1a4040}
+.tab-sub{flex:1;padding:7px 4px;border:none;background:transparent;color:var(--text-muted);font-family:'DM Mono',monospace;font-size:.63rem;letter-spacing:.05em;text-transform:uppercase;cursor:pointer;border-radius:6px;transition:all .2s}
+.tab-sub:hover:not(.active){color:var(--accent)}
+.tab-sub.active{background:#27635e;color:var(--accent);border:1px solid rgba(45,212,200,.3)}
 
-  /* ══ TITRE ══ */
-  .main-title{
-    text-align:center;
-    font-family:'Bangers', cursive;
-    font-size:2.4rem;
-    letter-spacing:3px;
-    color: var(--cyan);
-    text-shadow: 0 0 18px #7cf7ff88, 3px 3px 0 #0b1026;
-    margin:8px 0 4px;
-  }
+/* ── NAV TERTIAIRE (domotique) ── */
+.nav-tert{display:flex;gap:3px;margin-bottom:16px;background:rgba(9,31,30,.7);padding:3px;border-radius:7px;border:1px solid rgba(26,64,64,.7)}
+.tab-tert{flex:1;padding:6px 4px;border:none;background:transparent;color:var(--text-muted);font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.05em;text-transform:uppercase;cursor:pointer;border-radius:5px;transition:all .2s}
+.tab-tert:hover:not(.active){color:var(--text-dim)}
+.tab-tert.active{background:var(--teal-dark);color:var(--text-dim);border:1px solid rgba(26,64,64,.9)}
 
-  /* ══ COUNTDOWN ══ */
-  #countdown-bar{
-    text-align:center;
-    font-size:13px;
-    color: var(--muted);
-    margin-bottom:8px;
-  }
-  #countdown-bar span{
-    color: var(--cyan);
-    font-weight:bold;
-  }
-  #countdown-bar.urgent-time span{ color: var(--urgent); }
+.section{display:none}.section.active{display:block}
+.subsection{display:none}.subsection.active{display:block}
+.tertsection{display:none}.tertsection.active{display:block}
 
-  /* ══ NIGHT MODE BANNER ══ */
-  #screen-warning{
-    display:none;
-    background: linear-gradient(90deg,#2a1020,#1a0820);
-    border: 1.5px solid var(--pink);
-    border-radius:10px;
-    padding:10px 14px;
-    font-size:13px;
-    color:#ffb3d6;
-    margin-bottom:8px;
-    text-align:center;
-  }
+.dash-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:16px}
+@media(max-width:560px){.dash-grid{grid-template-columns:repeat(2,1fr)}}
+.metric-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;position:relative;overflow:hidden}
+.metric-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--teal-mid),transparent);opacity:.5}
+.metric-label{font-size:.6rem;letter-spacing:.15em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.metric-unit{font-size:.8rem;color:var(--text-muted);margin-top:4px}
+.dot{width:6px;height:6px;border-radius:50%;display:inline-block;flex-shrink:0}
+.dot-green{background:var(--accent);box-shadow:0 0 5px var(--accent)}
+.dot-amber{background:var(--amber);box-shadow:0 0 5px var(--amber)}
+.dot-red{background:var(--red);box-shadow:0 0 5px var(--red)}
+.dot-gray{background:var(--text-muted)}
 
-  /* ══ CARDS ══ */
-  .card{
-    background: var(--card);
-    padding:13px 14px;
-    margin:9px 0;
-    border-radius:14px;
-    border-left: 3px solid transparent;
-    transition: border-color 0.3s, box-shadow 0.3s, background 0.3s;
-    position:relative;
-  }
-  .card.active-step{
-    border-left-color: var(--cyan);
-    box-shadow: 0 0 18px #7cf7ff22, inset 0 0 30px #7cf7ff08;
-    background: var(--card2);
-  }
-  .card.active-step .card-title::after{
-    content: ' ← maintenant';
-    font-size:11px;
-    color: var(--cyan);
-    opacity:0.8;
-    font-family: 'Noto Sans JP', sans-serif;
-    font-weight:normal;
-  }
-  .card-title{
-    font-family:'Bangers', cursive;
-    font-size:1.25rem;
-    letter-spacing:1.5px;
-    color: var(--cyan);
-    margin:0 0 10px;
-  }
+/* ── SERRE BRIEF ── */
+.serre-brief{border-radius:12px;padding:14px 16px;margin-bottom:14px;border:1px solid var(--border)}
+.brief-ok  {border-color:rgba(45,212,200,.4);background:rgba(45,212,200,.06)}
+.brief-warn{border-color:#92400e;background:rgba(251,191,36,.07)}
+.brief-crit{border-color:#991b1b;background:rgba(248,113,113,.07)}
+.brief-loading{background:var(--surface);border:1px solid var(--border)}
+.sb-head{margin-bottom:8px}
+.sb-title{font-size:.88rem;font-weight:500;color:var(--text)}
+.brief-ok .sb-title{color:var(--accent)}.brief-warn .sb-title{color:var(--amber)}.brief-crit .sb-title{color:var(--red)}
+.sb-items{display:flex;flex-direction:column;gap:5px}
+.sb-row{display:flex;align-items:flex-start;gap:7px;font-size:.76rem;color:var(--text-dim);line-height:1.4}
+.sb-row.ok{color:var(--accent)}.sb-row.warn{color:var(--amber)}.sb-row.crit{color:var(--red)}
+.sb-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.sb-dot.ok{background:var(--accent)}.sb-dot.warn{background:var(--amber)}.sb-dot.crit{background:var(--red)}
+.sb-meta{font-size:.62rem;color:var(--text-muted);margin-top:8px;padding-top:8px;border-top:1px solid var(--border);display:flex;gap:12px;flex-wrap:wrap;align-items:center}
 
-  /* ══ STEPS ══ */
-  .step{
-    display:flex;
-    align-items:center;
-    margin:8px 0;
-    padding:6px 8px;
-    border-radius:8px;
-    transition: background 0.2s;
-    font-size:14px;
-  }
-  .step:has(input:checked){
-    background: #ffffff0a;
-    text-decoration: line-through;
-    color: var(--muted);
-  }
-  .step input[type=checkbox]{
-    width:20px; height:20px;
-    margin-right:10px;
-    flex-shrink:0;
-    accent-color: var(--cyan);
-    cursor:pointer;
-  }
+/* ── LIEU MÉTÉO ── */
+.lieu-meteo-wrap{display:inline-flex;align-items:center;gap:5px}
+.lieu-meteo-label{color:var(--accent);text-decoration:underline dotted;text-decoration-color:rgba(45,212,200,.5);text-underline-offset:3px;cursor:pointer;transition:color .15s;font-weight:500}
+.lieu-meteo-label:hover{color:var(--accent2)}
+.lieu-meteo-input{background:var(--bg3);border:1px solid var(--accent);border-radius:5px;color:var(--text);font-family:'DM Mono',monospace;font-size:.62rem;padding:2px 7px;outline:none;width:160px;box-shadow:0 0 0 2px rgba(45,212,200,.15)}
+.lieu-meteo-save{background:var(--teal-dark);border:1px solid var(--accent);color:var(--accent);font-family:'DM Mono',monospace;font-size:.58rem;padding:2px 7px;border-radius:4px;cursor:pointer;white-space:nowrap}
+.lieu-meteo-save:hover{background:rgba(45,212,200,.2)}
 
-  /* ══ PROGRESSION ══ */
-  #prog-card{
-    background: var(--card);
-    border-radius:14px;
-    padding:13px 14px;
-    margin:9px 0;
-  }
-  .bar{
-    height:16px;
-    background:#1a1f3a;
-    border-radius:10px;
-    overflow:hidden;
-    border:1px solid #2a2f4a;
-  }
-  .fill{
-    height:100%;
-    width:0%;
-    background:linear-gradient(90deg, var(--cyan), var(--purple));
-    transition: width 0.4s cubic-bezier(.4,0,.2,1);
-    border-radius:10px;
-  }
-  #status-line{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    margin-top:6px;
-    font-size:13px;
-    color: var(--muted);
-  }
-  #status-pct{ color: var(--cyan); font-weight:bold; font-size:15px; }
+/* ── CAPTEUR HORS LIGNE ── */
+.sensor-warning{background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.35);border-radius:8px;padding:10px 14px;margin-bottom:10px;display:flex;align-items:flex-start;gap:8px;font-size:.72rem;color:var(--red);line-height:1.5}
+.sensor-warning-icon{font-size:1rem;flex-shrink:0;margin-top:1px}
 
-  /* ══ MESSAGE MANGA (bulle BD) ══ */
-  .manga-bubble{
-    display:none;
-    position:relative;
-    background: var(--card2);
-    border:2px solid var(--purple);
-    border-radius:14px;
-    padding:12px 16px;
-    margin:8px 0 4px;
-    font-size:14px;
-    color:#d4b4ff;
-    font-style:italic;
-  }
-  .manga-bubble::before{
-    content:'';
-    position:absolute;
-    top:-14px; left:24px;
-    border:7px solid transparent;
-    border-bottom-color: var(--purple);
-  }
-  .manga-bubble.show{ display:block; }
-  .manga-speaker{
-    font-size:11px;
-    color: var(--purple);
-    font-style:normal;
-    font-weight:bold;
-    margin-bottom:4px;
-  }
+.chart-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:16px}
+.chart-title{font-size:.6rem;letter-spacing:.15em;text-transform:uppercase;color:var(--text-muted);margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.chart-wrap{position:relative;height:140px}
+.range-selector{display:flex;gap:4px}
+.range-btn{background:transparent;border:1px solid var(--border);color:var(--text-muted);font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.06em;padding:3px 9px;border-radius:6px;cursor:pointer;transition:all .2s}
+.range-btn.active{background:var(--teal-dark);border-color:var(--accent);color:var(--accent)}
+.range-btn:hover:not(.active){border-color:var(--teal-mid);color:var(--text-dim)}
+.chart-overlay{position:absolute;inset:0;background:rgba(8,15,15,.7);display:flex;align-items:center;justify-content:center;border-radius:8px;z-index:2}
+.history-info{font-size:.58rem;color:var(--text-muted);letter-spacing:.05em}
+.history-loading{color:var(--amber)}.history-err{color:var(--red)}
 
-  /* ══ PERSONNAGE GUIDE ══ */
-  #guide-card{
-    text-align:center;
-    padding:10px;
-    margin:9px 0;
-  }
-  #guide-emoji{ font-size:52px; transition: all 0.5s; display:inline-block; }
-  #guide-name{ font-size:11px; color:var(--muted); margin-top:2px; }
+/* ── COMMANDES ── */
+.cmd-section{margin-bottom:16px}
+.cmd-title{font-family:'Fraunces',serif;font-size:.95rem;font-weight:300;font-style:italic;color:var(--text-dim);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.cmd-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:500px){.cmd-grid{grid-template-columns:1fr}}
+.cmd-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:12px;transition:border-color .2s}
+.cmd-card:hover{border-color:var(--teal-mid)}
+.cmd-name{font-size:.75rem;color:var(--text);line-height:1.3}
+.cmd-desc{font-size:.6rem;color:var(--text-muted);letter-spacing:.05em}
+.cmd-row{display:flex;align-items:center;justify-content:space-between}
+.big-toggle{position:relative;width:56px;height:30px;flex-shrink:0}
+.big-toggle input{opacity:0;width:0;height:0}
+.big-toggle-slider{position:absolute;inset:0;background:var(--bg3);border:1px solid var(--border);border-radius:30px;cursor:pointer;transition:all .3s}
+.big-toggle-slider::before{content:'';position:absolute;width:20px;height:20px;left:4px;top:4px;background:var(--text-muted);border-radius:50%;transition:all .3s}
+.big-toggle input:checked+.big-toggle-slider{background:var(--teal-dark);border-color:var(--accent)}
+.big-toggle input:checked+.big-toggle-slider::before{transform:translateX(26px);background:var(--accent);box-shadow:0 0 8px var(--accent)}
+.big-toggle input:disabled+.big-toggle-slider{opacity:.4;cursor:not-allowed}
+.status-badge{font-size:.62rem;padding:3px 8px;border-radius:10px;letter-spacing:.05em}
+.badge-on{background:var(--teal-light);border:1px solid rgba(45,212,200,.3);color:var(--accent)}
+.badge-off{background:rgba(32,68,65,.2);border:1px solid var(--border);color:var(--text-muted)}
 
-  /* ══ STREAK / XP ══ */
-  #stats-card{
-    display:flex;
-    gap:10px;
-    margin:9px 0;
-  }
-  .stat-box{
-    flex:1;
-    background:var(--card);
-    border-radius:12px;
-    padding:10px;
-    text-align:center;
-  }
-  .stat-val{
-    font-family:'Bangers',cursive;
-    font-size:2rem;
-    color:var(--yellow);
-    line-height:1;
-  }
-  .stat-val.streak-val{ color:var(--pink); }
-  .stat-label{ font-size:10px; color:var(--muted); margin-top:2px; }
+/* ── APPAREILS ── */
+.grid-3{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+.device-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.device-header{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.device-name{font-size:.72rem;color:var(--text);line-height:1.3;flex:1}
+.device-type{font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);margin-top:2px}
+.toggle{position:relative;width:40px;height:22px;flex-shrink:0}
+.toggle input{opacity:0;width:0;height:0}
+.toggle-slider{position:absolute;inset:0;background:var(--bg3);border:1px solid var(--border);border-radius:22px;cursor:pointer;transition:all .3s}
+.toggle-slider::before{content:'';position:absolute;width:14px;height:14px;left:3px;top:3px;background:var(--text-muted);border-radius:50%;transition:all .3s}
+.toggle input:checked+.toggle-slider{background:var(--teal-dark);border-color:var(--accent)}
+.toggle input:checked+.toggle-slider::before{transform:translateX(18px);background:var(--accent);box-shadow:0 0 6px var(--accent)}
+.ch-row{display:grid;grid-template-columns:repeat(4,1fr);gap:5px}
+.ch-btn{background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:6px 3px;text-align:center;font-size:.6rem;color:var(--text-muted);cursor:pointer;transition:all .2s;font-family:'DM Mono',monospace;line-height:1.5}
+.ch-btn.on{background:var(--teal-light);border-color:var(--teal-mid);color:var(--accent)}
+.stitle{font-family:'Fraunces',serif;font-size:1rem;font-weight:300;font-style:italic;color:var(--text-dim);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+.stitle span{font-size:.6rem;letter-spacing:.1em;font-style:normal;font-family:'DM Mono',monospace;color:var(--text-muted)}
+.pills{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.pill{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:5px 12px;font-size:.62rem;color:var(--text-dim);display:flex;align-items:center;gap:5px}
+.loading{display:flex;align-items:center;justify-content:center;padding:40px;flex-direction:column;gap:12px;color:var(--text-muted);font-size:.7rem}
+.loading-ring{width:26px;height:26px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite}
+.err{text-align:center;padding:30px;color:var(--text-muted);font-size:.72rem;line-height:1.8}
+.err strong{color:var(--red);display:block;margin-bottom:6px}
+.ts{font-size:.58rem;color:var(--text-muted)}
 
-  /* ══ BADGES ══ */
-  #badges-card{
-    background:var(--card);
-    border-radius:14px;
-    padding:12px 14px;
-    margin:9px 0;
-  }
-  #badges-title{ font-family:'Bangers',cursive; font-size:1.1rem; color:var(--yellow); margin-bottom:8px; }
-  #badges-grid{ display:flex; flex-wrap:wrap; gap:6px; }
-  .badge{
-    background:#1a1f3a;
-    border-radius:10px;
-    padding:6px 10px;
-    font-size:11px;
-    display:flex; align-items:center; gap:5px;
-    border:1px solid #2a2f4a;
-    opacity:0.35;
-    transition: opacity 0.4s, border-color 0.4s;
-  }
-  .badge.earned{
-    opacity:1;
-    border-color: var(--yellow);
-    box-shadow: 0 0 8px #ffe06644;
-  }
-  .badge-icon{ font-size:18px; }
+/* ── CONSEILS ── */
+.theme-btn{background:var(--surface);border:1px solid var(--border);color:var(--text-muted);padding:7px 12px;border-radius:20px;font-family:'DM Mono',monospace;font-size:.65rem;cursor:pointer;letter-spacing:.04em;transition:all .2s;white-space:nowrap}
+.theme-btn.active,.theme-btn:hover{background:var(--teal-dark);border-color:var(--accent);color:var(--accent)}
+.reco-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px;margin-bottom:16px}
+.reco-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;display:flex;flex-direction:column;gap:6px;transition:border-color .2s}
+.reco-card:hover{border-color:var(--teal-mid)}
+.reco-card.urgent{border-left:3px solid var(--red)}
+.reco-card.semaine{border-left:3px solid var(--amber)}
+.reco-card.info{border-left:3px solid var(--accent)}
+.reco-emoji{font-size:1.3rem;line-height:1}
+.reco-titre{font-size:.8rem;font-weight:500;color:var(--text);line-height:1.3}
+.reco-desc{font-size:.72rem;color:var(--text-muted);line-height:1.5}
+.reco-header{display:flex;align-items:center;gap:8px}
+.reco-refresh{background:var(--surface);border:1px solid var(--border);color:var(--text-muted);padding:5px 12px;border-radius:6px;font-family:"DM Mono",monospace;font-size:.65rem;cursor:pointer;letter-spacing:.05em;transition:all .2s;display:flex;align-items:center;gap:5px}
+.reco-refresh:hover{border-color:var(--teal-mid);color:var(--accent)}
+.reco-refresh.spinning{animation:spin 1s linear infinite}
+.reco-loading{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px;margin-bottom:16px}
+.reco-skeleton{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;height:90px;position:relative;overflow:hidden}
+.reco-skeleton::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(45,212,200,.05),transparent);animation:shimmer 1.5s infinite}
+@keyframes shimmer{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+.mb{margin-bottom:16px}
+.alert-banner{background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.3);border-radius:10px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:10px;font-size:.72rem;color:var(--red)}
+.alert-banner.warn{background:rgba(251,191,36,.08);border-color:rgba(251,191,36,.3);color:var(--amber)}
 
-  /* ══ BRAVO ══ */
-  #bravo{
-    display:none;
-    text-align:center;
-    background: linear-gradient(135deg,#1a2545,#2a1a45);
-    border:2px solid var(--purple);
-    border-radius:14px;
-    padding:16px;
-    margin:10px 0;
-    font-size:15px;
-    color:#d4b4ff;
-    animation: glow 1.5s ease-in-out infinite alternate;
-  }
-  @keyframes glow{
-    from{ box-shadow:0 0 8px #a66bff44; }
-    to{ box-shadow:0 0 26px #a66bffaa; }
-  }
+/* ── PROGRAMMATION ── */
+.prog-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px}
+.prog-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px}
+.prog-title{font-size:.8rem;font-weight:500;color:var(--text)}
+.prog-badge{font-size:.58rem;padding:2px 8px;border-radius:10px;letter-spacing:.05em}
+.prog-badge.actif{background:var(--teal-light);border:1px solid rgba(45,212,200,.3);color:var(--accent)}
+.prog-badge.inactif{background:rgba(32,68,65,.15);border:1px solid var(--border);color:var(--text-muted)}
+.prog-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:.72rem;color:var(--text-dim);flex-wrap:wrap}
+.prog-lbl{color:var(--text-muted);min-width:110px;font-size:.62rem;letter-spacing:.06em;text-transform:uppercase;flex-shrink:0}
+.prog-input{background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-family:'DM Mono',monospace;font-size:.72rem;color:var(--text);outline:none;transition:border-color .2s}
+.prog-input:focus{border-color:var(--accent)}
+.prog-select{background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-family:'DM Mono',monospace;font-size:.72rem;color:var(--text);outline:none;-webkit-appearance:none;cursor:pointer}
+.prog-btn{background:var(--teal-dark);border:1px solid var(--accent);color:var(--accent);padding:6px 14px;border-radius:6px;font-family:'DM Mono',monospace;font-size:.68rem;cursor:pointer;transition:all .2s;white-space:nowrap}
+.prog-btn:hover{background:rgba(45,212,200,.2)}
+.prog-btn.del{background:rgba(248,113,113,.08);border-color:rgba(248,113,113,.3);color:var(--red)}
+.prog-btn.del:hover{background:rgba(248,113,113,.15)}
+.prog-section-sep{font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);padding:6px 0 4px;border-top:1px solid var(--border);margin-top:8px;margin-bottom:4px}
+.cond-badge{display:inline-block;padding:2px 7px;border-radius:8px;font-size:.58rem;font-family:'DM Mono',monospace;background:rgba(45,212,200,.08);border:1px solid rgba(45,212,200,.25);color:var(--accent);margin-left:4px}
+.prog-idea{background:rgba(45,212,200,.04);border:1px solid rgba(45,212,200,.15);border-radius:10px;padding:12px 14px;margin-bottom:8px;cursor:pointer;transition:all .2s;display:flex;align-items:flex-start;gap:10px}
+.prog-idea:hover{background:rgba(45,212,200,.09);border-color:rgba(45,212,200,.35)}
+.prog-idea-icon{font-size:1.2rem;flex-shrink:0}
+.prog-idea-txt{font-size:.72rem;color:var(--text-dim);line-height:1.5}
+.prog-idea-title{font-size:.78rem;color:var(--text);font-weight:500;margin-bottom:2px}
+.prog-empty{text-align:center;padding:30px;color:var(--text-muted);font-size:.75rem;font-style:italic}
 
-  /* ══ URGENT MODE ══ */
-  #urgent-banner{
-    display:none;
-    background:linear-gradient(90deg,#2a0808,#1a0808);
-    border:2px solid var(--urgent);
-    border-radius:12px;
-    padding:10px 14px;
-    color:#ffaaaa;
-    font-size:13px;
-    text-align:center;
-    margin:9px 0;
-    animation: pulse-red 1.5s ease-in-out infinite alternate;
-  }
-  @keyframes pulse-red{
-    from{box-shadow:0 0 6px #ff444433;}
-    to{box-shadow:0 0 20px #ff444488;}
-  }
-  body.urgent-mode .card.urgent-keep{
-    border-left-color: var(--urgent);
-    box-shadow: 0 0 14px #ff444422;
-  }
-
-  /* ══ AVATAR ══ */
-  .avatar{ font-size:44px; text-align:center; margin-bottom:6px; }
-  .avatar-btns{ text-align:center; }
-
-  /* ══ BUTTONS ══ */
-  button{
-    background: linear-gradient(135deg,var(--cyan),#5bc8d8);
-    border:none;
-    padding:7px 13px;
-    margin:4px;
-    border-radius:8px;
-    font-weight:bold;
-    font-size:13px;
-    cursor:pointer;
-    color:#0b1026;
-    transition: transform 0.1s, box-shadow 0.1s;
-  }
-  button:active{ transform:scale(0.96); }
-  .btn-danger{ background:linear-gradient(135deg,#ff6b6b,#cc3333); color:white; }
-  .btn-purple{ background:linear-gradient(135deg,var(--purple),#7744cc); color:white; }
-
-  /* ══ TIMER ══ */
-  .timer{ text-align:center; font-size:20px; margin:8px 0; font-family:'Bangers',cursive; letter-spacing:2px; color:var(--cyan); }
-
-  /* ══ SMALL ══ */
-  .small{ font-size:12px; color:var(--muted); margin:6px 0; }
-
-  /* ══ TÂCHE PERSO ══ */
-  #custom-task-input{
-    flex:1; padding:7px 10px; border-radius:8px;
-    background:#0d1228; border:1px solid #2a2f4a;
-    color:var(--text); font-size:13px; outline:none;
-  }
-  #custom-task-input:focus{ border-color:var(--cyan); }
-
-  /* ══ ANIMATION ÉTOILES 22h ══ */
-  #sleep-overlay{
-    display:none;
-    position:fixed; inset:0;
-    background:radial-gradient(ellipse at center, #0a0d2a 0%, #000005 100%);
-    z-index:999;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-    text-align:center;
-  }
-  #sleep-overlay.show{ display:flex; }
-  #sleep-msg{
-    font-family:'Bangers',cursive;
-    font-size:2rem;
-    color:var(--cyan);
-    letter-spacing:2px;
-    margin-top:20px;
-    text-shadow: 0 0 20px var(--cyan);
-  }
-  #sleep-sub{ font-size:14px; color:var(--muted); margin-top:10px; max-width:280px; }
-  #close-overlay{ margin-top:24px; }
-  #breath-circle{
-    width:100px; height:100px;
-    border-radius:50%;
-    background: radial-gradient(circle, #7cf7ff44, #7cf7ff11);
-    border:2px solid var(--cyan);
-    animation: breathe 4s ease-in-out infinite;
-    box-shadow:0 0 30px #7cf7ff44;
-  }
-  @keyframes breathe{
-    0%,100%{ transform:scale(1); opacity:0.6; }
-    50%{ transform:scale(1.45); opacity:1; }
-  }
-  .star-canvas{ position:fixed; inset:0; z-index:-1; }
-
-  /* ══ RECORD ══ */
-  #record-line{ font-size:11px; color:var(--muted); margin-top:3px; }
-
-  /* ══ CARTE COMPLÈTE (estompée) ══ */
-  .card.done{
-    opacity: 0.38;
-    filter: saturate(0.3) brightness(0.7);
-    transition: opacity 0.6s ease, filter 0.6s ease;
-  }
-  .card.done .card-title{ color: var(--muted); }
-
-  /* ══ CHAMP HEURE TÂCHE PERSO ══ */
-  #custom-task-form{ display:flex; gap:6px; margin-top:8px; flex-wrap:wrap; }
-  #custom-task-time{
-    width:72px; padding:7px 8px; border-radius:8px;
-    background:#0d1228; border:1px solid #2a2f4a;
-    color:var(--text); font-size:13px; outline:none;
-    text-align:center;
-  }
-  #custom-task-time:focus{ border-color:var(--cyan); }
-
-  /* ══ ROUE CRANTÉE + PANNEAU SETTINGS ══ */
-  #settings-btn{
-    position:absolute; top:14px; left:14px; z-index:200;
-    width:30px; height:30px; border-radius:50%;
-    background:transparent; border:1px solid #2a2f4a;
-    display:flex; align-items:center; justify-content:center;
-    font-size:15px; cursor:pointer;
-    transition: transform 0.4s ease, opacity 0.2s, border-color 0.2s;
-    padding:0; margin:0;
-    color: var(--muted);
-    opacity:0.45;
-  }
-  #settings-btn:hover, #settings-btn.open{ opacity:1; border-color:var(--cyan); color:var(--cyan); }
-  #settings-btn.open{ transform:rotate(90deg); }
-
-  #settings-panel{
-    display:none;
-    position:fixed; inset:0; z-index:199;
-    background:#000000bb;
-    backdrop-filter: blur(4px);
-  }
-  #settings-panel.open{ display:block; }
-  #settings-inner{
-    position:absolute; top:0; left:0; right:0;
-    max-height:92vh; overflow-y:auto;
-    background: linear-gradient(160deg,#0f1530,#090d1e);
-    border-bottom-left-radius:18px;
-    border-bottom-right-radius:18px;
-    padding:60px 16px 24px;
-    box-shadow: 0 8px 32px #000000aa;
-  }
-  .settings-title{
-    font-family:'Bangers',cursive;
-    font-size:1.4rem; letter-spacing:2px;
-    color:var(--cyan); margin-bottom:14px;
-  }
-  .settings-section{
-    background:var(--card);
-    border-radius:12px;
-    padding:12px 14px;
-    margin-bottom:12px;
-  }
-  .settings-section-title{
-    font-size:11px; font-weight:bold;
-    color:var(--purple); text-transform:uppercase;
-    letter-spacing:1px; margin-bottom:10px;
-  }
-  /* Ligne d'une action permanente */
-  .perm-row{
-    display:flex; align-items:center; gap:8px;
-    margin:6px 0; background:#0d1228;
-    border-radius:8px; padding:7px 10px;
-    border:1px solid #1e2440;
-  }
-  .perm-row input[type=time]{
-    width:72px; background:#060a18; border:1px solid #2a2f4a;
-    border-radius:6px; color:var(--cyan); font-size:13px;
-    padding:4px 6px; outline:none; text-align:center;
-  }
-  .perm-row input[type=text]{
-    flex:1; background:#060a18; border:1px solid #2a2f4a;
-    border-radius:6px; color:var(--text); font-size:13px;
-    padding:4px 8px; outline:none;
-  }
-  .perm-row input:focus{ border-color:var(--cyan); }
-  .perm-row .del-btn{
-    background:none; border:none; color:#ff6b6b;
-    font-size:16px; cursor:pointer; padding:2px 4px;
-    border-radius:4px; line-height:1;
-    min-width:24px;
-  }
-  .perm-row .del-btn:active{ background:#ff000022; }
-  /* Formulaire ajout */
-  .perm-add-row{
-    display:flex; gap:6px; margin-top:10px; flex-wrap:wrap;
-  }
-  .perm-add-row input[type=time]{
-    width:76px; padding:7px 8px; border-radius:8px;
-    background:#0d1228; border:1px solid #2a2f4a;
-    color:var(--cyan); font-size:13px; outline:none; text-align:center;
-  }
-  .perm-add-row input[type=text]{
-    flex:1; min-width:120px; padding:7px 10px; border-radius:8px;
-    background:#0d1228; border:1px solid #2a2f4a;
-    color:var(--text); font-size:13px; outline:none;
-  }
-  .perm-add-row input:focus{ border-color:var(--cyan); }
-  .btn-save-settings{
-    width:100%; margin-top:14px;
-    background:linear-gradient(135deg,var(--purple),#5533aa);
-    color:white; font-size:14px; padding:11px;
-    border-radius:10px; border:none; cursor:pointer;
-    font-family:'Bangers',cursive; letter-spacing:2px; font-size:1rem;
-  }
-
-
+/* ── WEBCAM ── */
+.webcam-placeholder{background:var(--surface);border:1px dashed var(--border);border-radius:14px;padding:40px 20px;text-align:center;color:var(--text-muted)}
+.webcam-icon{font-size:3rem;margin-bottom:16px;opacity:.4}
+.webcam-title{font-family:'Fraunces',serif;font-size:1.1rem;font-weight:300;font-style:italic;color:var(--text-dim);margin-bottom:8px}
+.webcam-desc{font-size:.75rem;line-height:1.6;max-width:360px;margin:0 auto}
+.webcam-url-form{margin-top:20px;display:flex;flex-direction:column;gap:8px;align-items:center}
+.webcam-input{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-family:'DM Mono',monospace;font-size:.75rem;color:var(--text);outline:none;width:100%;max-width:400px}
+.webcam-input:focus{border-color:var(--accent)}
+.webcam-connect-btn{background:var(--teal-dark);border:1px solid var(--accent);color:var(--accent);padding:8px 20px;border-radius:8px;font-family:'DM Mono',monospace;font-size:.72rem;cursor:pointer;transition:all .2s}
+.webcam-connect-btn:hover{background:rgba(45,212,200,.2)}
+.webcam-frame{width:100%;aspect-ratio:16/9;border-radius:12px;background:#000;border:1px solid var(--border);overflow:hidden;position:relative}
+.webcam-frame img{width:100%;height:100%;object-fit:cover}
+.webcam-frame .no-signal{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--text-muted);font-size:.75rem;gap:8px}
 </style>
 </head>
 <body>
+<header>
+  <div class="header-inner">
+    <div class="logo"><div class="logo-dot"></div>Jardin Vivant</div>
+    <div class="header-right">
+      <div class="header-status" id="hs">— démarrage</div>
+      <button class="refresh-btn" id="refreshBtn" onclick="refreshAll()">&#8635;</button>
+    </div>
+  </div>
+</header>
+<main>
+  <!-- NAV PRINCIPAL -->
+  <div class="nav-tabs">
+    <button class="tab active" onclick="showTab('serre',this)">Serre</button>
+    <button class="tab" onclick="goBassin()">Bassin</button>
+    <button class="tab" onclick="goRecoltes()">Cultures</button>
+  </div>
 
-<!-- ROUE CRANTÉE + TITRE -->
-<div style="position:relative;">
-  <button id="settings-btn" onclick="toggleSettings()" title="Réglages">⚙️</button>
-  <h1 class="main-title">🌙 Sleep Quest</h1>
-</div>
+  <!-- SERRE -->
+  <div class="section active" id="tab-serre">
 
-<div id="settings-panel">
-  <div id="settings-inner">
-    <div class="settings-title">⚙️ Réglages du planning</div>
-
-    <div class="settings-section">
-      <div class="settings-section-title">Actions permanentes</div>
-      <div id="perm-list"></div>
-      <div class="perm-add-row">
-        <input type="time" id="perm-new-time" placeholder="heure">
-        <input type="text" id="perm-new-label" placeholder="Nouvelle action..." maxlength="60">
-        <button onclick="addPermTask()" style="flex-shrink:0">+</button>
-      </div>
+    <!-- NAV SECONDAIRE -->
+    <div class="nav-sub">
+      <button class="tab-sub active" onclick="showSub('apercu',this)">Aperçu</button>
+      <button class="tab-sub" onclick="showSub('domotique',this)">Domotique</button>
+      <button class="tab-sub" onclick="showSubConseils(this)">Conseils</button>
     </div>
 
-    <button class="btn-save-settings" onclick="saveAndCloseSettings()">✔ Enregistrer et fermer</button>
-  </div>
-</div>
+    <!-- APERÇU -->
+    <div class="subsection active" id="sub-apercu">
+      <div id="alertBanners"></div>
+      <div id="sensorWarnings"></div>
 
-<!-- OVERLAY SOMMEIL 22H -->
-<div id="sleep-overlay">
-  <canvas class="star-canvas" id="starCanvas"></canvas>
-  <div id="breath-circle"></div>
-  <div id="sleep-msg">🌙 C'est l'heure de dormir</div>
-  <div id="sleep-sub">"Tu es en sécurité, tout le monde est là pour toi, tu peux dormir paisiblement."</div>
-  <button id="close-overlay" onclick="closeOverlay()">Fermer</button>
-</div>
+      <div id="serreBrief">
+        <div class="serre-brief brief-loading">
+          <div class="sb-head"><div class="sb-title" style="color:var(--text-muted)">Analyse de la serre en cours…</div></div>
+        </div>
+      </div>
 
-<!-- COUNTDOWN 22H -->
-<div id="countdown-bar">Objectif sommeil : <span id="countdown-txt">--:--</span></div>
+      <!-- MÉTRIQUES : uniquement temp air + humidité serre (pH/temp eau supprimés → bassin.html) -->
+      <div class="dash-grid" id="serreMetrics">
+        <div class="loading" style="grid-column:1/-1"><div class="loading-ring"></div>Lecture capteurs…</div>
+      </div>
 
-<!-- AVERTISSEMENT ÉCRANS -->
-<div id="screen-warning">📵 Après 20h, les écrans retardent ton endormissement. Pose le téléphone dès que tu peux !</div>
+      <!-- Graphique Température -->
+      <div class="chart-card">
+        <div class="chart-title">
+          <span>Température serre</span>
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            <div class="range-selector">
+              <button class="range-btn active" onclick="setRangeTemp('24h',this)">24h</button>
+              <button class="range-btn" onclick="setRangeTemp('3d',this)">3j</button>
+              <button class="range-btn" onclick="setRangeTemp('7d',this)">7j</button>
+              <button class="range-btn" onclick="setRangeTemp('30d',this)">30j</button>
+            </div>
+            <span id="chartTempInfo" class="history-info">—</span>
+          </div>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="chartTemp"></canvas>
+        </div>
+      </div>
 
-<!-- MODE URGENT -->
-<div id="urgent-banner">⚠️ Il est tard ! Voici ce qui compte encore — fais le minimum pour dormir vite.</div>
+      <!-- Graphique Humidité -->
+      <div class="chart-card mb">
+        <div class="chart-title">
+          <span>Humidité serre</span>
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            <div class="range-selector">
+              <button class="range-btn active" onclick="setRangeHum('24h',this)">24h</button>
+              <button class="range-btn" onclick="setRangeHum('3d',this)">3j</button>
+              <button class="range-btn" onclick="setRangeHum('7d',this)">7j</button>
+              <button class="range-btn" onclick="setRangeHum('30d',this)">30j</button>
+            </div>
+            <span id="chartHumInfo" class="history-info">—</span>
+          </div>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="chartHum"></canvas>
+        </div>
+      </div>
 
-<!-- GUIDE MANGA -->
-<div class="card" id="guide-card">
-  <div id="guide-emoji">😴</div>
-  <div id="guide-name">Ton guide · En attente...</div>
-</div>
+      <!-- Commandes rapides -->
+      <div class="cmd-section">
+        <div class="cmd-title">Commandes rapides</div>
+        <div class="cmd-grid">
+          <div class="cmd-card">
+            <div><div class="cmd-name">Arrosage bas-Rhône 💧</div><div class="cmd-desc">Smart Water Timer · Canal 2</div></div>
+            <div class="cmd-row">
+              <span class="status-badge" id="badge-rhone">—</span>
+              <label class="big-toggle"><input type="checkbox" id="toggle-rhone" onchange="cmdRhone(this.checked)" disabled><span class="big-toggle-slider"></span></label>
+            </div>
+          </div>
+          <div class="cmd-card">
+            <div><div class="cmd-name">Brumisation 🫧</div><div class="cmd-desc">Smart Water Timer · Canal 1</div></div>
+            <div class="cmd-row">
+              <span class="status-badge" id="badge-brumisation">—</span>
+              <label class="big-toggle"><input type="checkbox" id="toggle-brumisation" onchange="cmdBrumisation(this.checked)" disabled><span class="big-toggle-slider"></span></label>
+            </div>
+          </div>
+          <div class="cmd-card">
+            <div><div class="cmd-name">Lumière serre 💡</div><div class="cmd-desc">Prog LED Ventil · Canal 2</div></div>
+            <div class="cmd-row">
+              <span class="status-badge" id="badge-lumiere">—</span>
+              <label class="big-toggle"><input type="checkbox" id="toggle-lumiere" onchange="cmdLumiere(this.checked)" disabled><span class="big-toggle-slider"></span></label>
+            </div>
+          </div>
+          <div class="cmd-card">
+            <div><div class="cmd-name">Bain à remous 🌊</div><div class="cmd-desc">Prog LED Ventil · Canal 4</div></div>
+            <div class="cmd-row">
+              <span class="status-badge" id="badge-remous">—</span>
+              <label class="big-toggle"><input type="checkbox" id="toggle-remous" onchange="cmdRemous(this.checked)" disabled><span class="big-toggle-slider"></span></label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /sub-apercu -->
 
-<!-- BULLE MANGA -->
-<div class="manga-bubble" id="manga-bubble">
-  <div class="manga-speaker" id="manga-speaker">— Naruto</div>
-  <span id="manga-text">Lance-toi, dattebayo !</span>
-</div>
+    <!-- DOMOTIQUE -->
+    <div class="subsection" id="sub-domotique">
+      <div class="nav-tert">
+        <button class="tab-tert active" onclick="showTert('programmation',this)">Programmation</button>
+        <button class="tab-tert" onclick="showTert('webcam',this)">Webcam</button>
+        <button class="tab-tert" onclick="showTertAppareils(this)">Appareils</button>
+      </div>
 
-<!-- STATS : STREAK + XP -->
-<div id="stats-card">
-  <div class="stat-box">
-    <div class="stat-val streak-val" id="streak-val">0</div>
-    <div class="stat-label">🔥 Jours d'affilée</div>
-    <div id="record-line">Record : 0</div>
-  </div>
-  <div class="stat-box">
-    <div class="stat-val" id="xp-val">0</div>
-    <div class="stat-label">⭐ XP total</div>
-  </div>
-</div>
+      <!-- PROGRAMMATION -->
+      <div class="tertsection active" id="tert-programmation">
+        <div class="stitle">Programmes <span>Automatisation</span></div>
 
-<!-- PROGRESSION -->
-<div id="prog-card">
-  <div class="bar"><div class="fill" id="bar"></div></div>
-  <div id="status-line">
-    <span id="status-pct">0%</span>
-    <span id="status-txt">Commençons !</span>
-  </div>
-</div>
+        <div id="progList"></div>
 
-<!-- BRAVO -->
-<div id="bravo">🌟 Bravo, tu es prêt à passer une bonne nuit ! 🌙✨</div>
+        <!-- Nouveau programme enrichi -->
+        <div class="prog-card" style="border-color:rgba(163,230,53,.2)">
+          <div class="prog-header">
+            <div class="prog-title">➕ Nouveau programme</div>
+          </div>
 
-<!-- BADGES -->
-<div id="badges-card">
-  <div id="badges-title">🏆 Tes badges</div>
-  <div id="badges-grid"></div>
-</div>
+          <!-- Appareil & action -->
+          <div class="prog-row">
+            <span class="prog-lbl">Appareil</span>
+            <select class="prog-select" id="new-prog-device" style="flex:1">
+              <option value="rhone-2">Arrosage bas-Rhône (Canal 2)</option>
+              <option value="brumisation-1">Brumisation (Canal 1)</option>
+              <option value="lumiere-2">Lumière serre (Canal 2)</option>
+              <option value="remous-4">Bain à remous (Canal 4)</option>
+            </select>
+          </div>
+          <div class="prog-row">
+            <span class="prog-lbl">Action</span>
+            <select class="prog-select" id="new-prog-action">
+              <option value="on">Activer</option>
+              <option value="off">Désactiver</option>
+            </select>
+          </div>
 
-<!-- AVATAR -->
-<div class="card">
-  <div class="avatar" id="avatar">⚡🧢</div>
-  <div class="avatar-btns">
-    <button onclick="setAvatar('⚡🧢')">Ash</button>
-    <button onclick="setAvatar('🐉🔥')">Dracaufeu</button>
-    <button onclick="setAvatar('🌙👘')">Manga</button>
-    <button onclick="setAvatar('🥷🖤')">Ninja</button>
-  </div>
-</div>
+          <!-- Horaires -->
+          <div class="prog-section-sep">⏱ Horaires</div>
+          <div class="prog-row">
+            <span class="prog-lbl">Heure de début</span>
+            <input class="prog-input" type="time" id="new-prog-time" value="07:00" style="flex:1">
+          </div>
+          <div class="prog-row">
+            <span class="prog-lbl">Heure de fin</span>
+            <input class="prog-input" type="time" id="new-prog-endtime" value="" placeholder="Optionnel" style="flex:1">
+            <span style="font-size:.6rem;color:var(--text-muted);margin-left:4px" title="Heure à laquelle le programme s'arrête (utile pour répétition)">ℹ</span>
+          </div>
+          <div class="prog-row">
+            <span class="prog-lbl">Durée action</span>
+            <input class="prog-input" type="number" id="new-prog-duration" value="30" min="0" max="3600" style="width:70px">
+            <select class="prog-select" id="new-prog-duration-unit" style="width:auto;padding:4px 8px;font-size:.72rem;margin-left:4px" onchange="previewProgramme()">
+              <option value="min">min</option>
+              <option value="sec">sec</option>
+            </select>
+            <span style="font-size:.62rem;color:var(--text-muted);margin-left:4px">(0 = sans limite)</span>
+          </div>
 
-<!-- DEVOIRS -->
-<div class="card" id="devoirsCard" data-start="17" data-end="18">
-  <div class="card-title">17h45 — Devoirs</div>
-  <div class="step"><input type="checkbox" data-key="devoirs" onchange="onCheck(this)"> Devoirs faits</div>
-</div>
+          <!-- Répétition -->
+          <div class="prog-section-sep">🔁 Répétition</div>
+          <div class="prog-row">
+            <span class="prog-lbl">Répéter toutes les</span>
+            <input class="prog-input" type="number" id="new-prog-repeat-every" min="0" max="1440" placeholder="0 = non" style="width:70px" value="0">
+            <span style="font-size:.62rem;color:var(--text-muted);margin-left:4px">minutes (0 = action unique)</span>
+          </div>
 
-<!-- SAC (juste après devoirs) -->
-<div class="card" id="sacCard" data-start="17" data-end="18">
-  <div class="card-title">18h00 — Sac d'école</div>
-  <div class="step">
-    <input type="checkbox" data-key="sac" onchange="onCheck(this)"> Sac d'école prêt et descendu
-  </div>
-</div>
+          <!-- Jours -->
+          <div class="prog-section-sep">📅 Jours actifs</div>
+          <div class="prog-row">
+            <span class="prog-lbl">Jours</span>
+            <div id="new-prog-days" style="display:flex;gap:4px;flex-wrap:wrap">
+              <label style="display:flex;align-items:center;gap:3px;font-size:.65rem;color:var(--text-dim);cursor:pointer"><input type="checkbox" value="1" checked style="accent-color:var(--accent)">Lun</label>
+              <label style="display:flex;align-items:center;gap:3px;font-size:.65rem;color:var(--text-dim);cursor:pointer"><input type="checkbox" value="2" checked style="accent-color:var(--accent)">Mar</label>
+              <label style="display:flex;align-items:center;gap:3px;font-size:.65rem;color:var(--text-dim);cursor:pointer"><input type="checkbox" value="3" checked style="accent-color:var(--accent)">Mer</label>
+              <label style="display:flex;align-items:center;gap:3px;font-size:.65rem;color:var(--text-dim);cursor:pointer"><input type="checkbox" value="4" checked style="accent-color:var(--accent)">Jeu</label>
+              <label style="display:flex;align-items:center;gap:3px;font-size:.65rem;color:var(--text-dim);cursor:pointer"><input type="checkbox" value="5" checked style="accent-color:var(--accent)">Ven</label>
+              <label style="display:flex;align-items:center;gap:3px;font-size:.65rem;color:var(--text-dim);cursor:pointer"><input type="checkbox" value="6" style="accent-color:var(--accent)">Sam</label>
+              <label style="display:flex;align-items:center;gap:3px;font-size:.65rem;color:var(--text-dim);cursor:pointer"><input type="checkbox" value="0" style="accent-color:var(--accent)">Dim</label>
+            </div>
+          </div>
 
-<!-- GUITARE -->
-<div class="card" id="guitareCard" data-start="18" data-end="19">
-  <div class="card-title">18h20 — Guitare</div>
-  <button onclick="startTimer()">▶ Lancer 5 min</button>
-  <div class="timer" id="timer">05:00</div>
-  <div class="step"><input type="checkbox" data-key="guitare_done" onchange="onCheck(this)"> Guitare</div>
-</div>
+          <!-- Conditions capteurs -->
+          <div class="prog-section-sep">🔧 Conditions (optionnel — toutes doivent être remplies)</div>
+          <!-- Temp eau -->
+          <div class="prog-row">
+            <span class="prog-lbl">Temp. eau</span>
+            <select class="prog-select" id="new-cond-tempeau-op" style="width:90px">
+              <option value="">— aucune</option>
+              <option value="gt">&gt; (supérieure à)</option>
+              <option value="lt">&lt; (inférieure à)</option>
+            </select>
+            <input class="prog-input" type="number" id="new-cond-tempeau-val" placeholder="°C" step="0.5" style="width:70px">
+            <span style="font-size:.62rem;color:var(--text-muted)">°C</span>
+          </div>
+          <!-- Temp serre -->
+          <div class="prog-row">
+            <span class="prog-lbl">Temp. serre</span>
+            <select class="prog-select" id="new-cond-tempserre-op" style="width:90px">
+              <option value="">— aucune</option>
+              <option value="gt">&gt; (supérieure à)</option>
+              <option value="lt">&lt; (inférieure à)</option>
+            </select>
+            <input class="prog-input" type="number" id="new-cond-tempserre-val" placeholder="°C" step="0.5" style="width:70px">
+            <span style="font-size:.62rem;color:var(--text-muted)">°C</span>
+          </div>
+          <!-- Humidité serre -->
+          <div class="prog-row">
+            <span class="prog-lbl">Humidité serre</span>
+            <select class="prog-select" id="new-cond-hum-op" style="width:90px">
+              <option value="">— aucune</option>
+              <option value="gt">&gt; (supérieure à)</option>
+              <option value="lt">&lt; (inférieure à)</option>
+            </select>
+            <input class="prog-input" type="number" id="new-cond-hum-val" placeholder="%" step="1" style="width:70px">
+            <span style="font-size:.62rem;color:var(--text-muted)">%</span>
+          </div>
 
-<!-- ORGANISATION -->
-<div class="card" data-start="18" data-end="19">
-  <div class="card-title">18h30 — Organisation</div>
-  <div class="step"><input type="checkbox" data-key="chambre" onchange="onCheck(this)"> Ranger ma chambre</div>
-  <div class="step"><input type="checkbox" data-key="affaires_maison" onchange="onCheck(this)"> Ranger mes affaires dans la maison</div>
-</div>
+          <div id="prog-preview" style="display:none;margin-top:10px;padding:8px 12px;background:rgba(163,230,53,.06);border:1px solid rgba(163,230,53,.2);border-radius:8px;font-size:.68rem;color:var(--text-dim);line-height:1.6"></div>
 
-<!-- ANIMAUX -->
-<div class="card" data-start="18" data-end="19">
-  <div class="card-title">18h55 — Animaux</div>
-  <div class="step"><input type="checkbox" data-key="cochons" onchange="onCheck(this)"> Je me suis occupé des cochons d'Inde</div>
-</div>
+          <div style="margin-top:12px;display:flex;gap:8px">
+            <button class="prog-btn" onclick="previewProgramme()" style="background:transparent;border-color:var(--border);color:var(--text-muted);flex:0">Aperçu</button>
+            <button class="prog-btn" onclick="addProgramme()" style="flex:1">Créer le programme</button>
+          </div>
+        </div>
 
-<!-- DÎNER -->
-<div class="card" data-start="19" data-end="20">
-  <div class="card-title">19h00 — Dîner calme</div>
-  <div class="small">Pas d'écrans à table 🍽️</div>
-</div>
+        <!-- Idées de programmes -->
+        <div class="stitle" style="margin-top:20px">Idées de programmes <span>Suggestions</span></div>
+        <div id="progIdees">
+          <div class="prog-idea" onclick="applyIdee('arrosage-matin')">
+            <div class="prog-idea-icon">🌅</div>
+            <div><div class="prog-idea-title">Arrosage matinal quotidien</div><div class="prog-idea-txt">Arrosage bas-Rhône activé chaque matin à 7h00 pendant 45 min, tous les jours.</div></div>
+          </div>
+          <div class="prog-idea" onclick="applyIdee('brumisation-chaleur')">
+            <div class="prog-idea-icon">🌡️</div>
+            <div><div class="prog-idea-title">Brumisation anti-chaleur conditionnelle</div><div class="prog-idea-txt">Brumisation toutes les 10 min (5 sec) de 8h à 16h30 si humidité &lt; 52% ET température &gt; 25°C.</div></div>
+          </div>
+          <div class="prog-idea" onclick="applyIdee('lumiere-hiver')">
+            <div class="prog-idea-icon">💡</div>
+            <div><div class="prog-idea-title">Éclairage hiver</div><div class="prog-idea-txt">Lumière serre de 6h00 à 8h30 et de 17h00 à 19h00 pour compléter la photopériode.</div></div>
+          </div>
+          <div class="prog-idea" onclick="applyIdee('remous-nuit')">
+            <div class="prog-idea-icon">🌊</div>
+            <div><div class="prog-idea-title">Bain à remous nocturne</div><div class="prog-idea-txt">Activation du bain à remous à 22h00 pendant 30 min pour oxygéner le bassin la nuit.</div></div>
+          </div>
+          <div class="prog-idea" onclick="applyIdee('arrosage-week')">
+            <div class="prog-idea-icon">📅</div>
+            <div><div class="prog-idea-title">Arrosage week-end renforcé</div><div class="prog-idea-txt">Arrosage double le samedi et dimanche à 8h00 (60 min) pour compenser l'absence de suivi.</div></div>
+          </div>
+        </div>
+      </div><!-- /tert-programmation -->
 
-<!-- TEMPS CALME -->
-<div class="card" data-start="19" data-end="20">
-  <div class="card-title">19h45 — Temps calme</div>
-  <div class="small">✔ Lecture, dessin, LEGO, musique douce<br>❌ vidéos rapides / jeux</div>
-</div>
+      <!-- WEBCAM -->
+      <div class="tertsection" id="tert-webcam">
+        <div class="stitle">Webcam serre <span>Surveillance</span></div>
+        <div id="webcamContainer">
+          <div class="webcam-placeholder" id="webcamPlaceholder">
+            <div class="webcam-icon">📷</div>
+            <div class="webcam-title">Webcam non connectée</div>
+            <div class="webcam-desc">Connectez votre caméra Tapo par Device ID, ou entrez une URL de flux MJPEG.</div>
+            <div class="webcam-url-form">
+              <!-- Onglets type de connexion -->
+              <div style="display:flex;gap:4px;background:var(--bg3);padding:3px;border-radius:8px;border:1px solid var(--border);width:100%;max-width:400px">
+                <button id="wc-tab-tapo" onclick="wcTab('tapo')" style="flex:1;padding:6px 4px;border:none;border-radius:6px;font-family:'DM Mono',monospace;font-size:.65rem;cursor:pointer;background:var(--bg);color:var(--accent);border:1px solid var(--border)">📱 Tapo Device ID</button>
+                <button id="wc-tab-url" onclick="wcTab('url')" style="flex:1;padding:6px 4px;border:none;border-radius:6px;font-family:'DM Mono',monospace;font-size:.65rem;cursor:pointer;background:transparent;color:var(--text-muted)">🔗 URL flux MJPEG</button>
+              </div>
+              <!-- Panneau Tapo -->
+              <div id="wc-panel-tapo" style="width:100%;max-width:400px;display:flex;flex-direction:column;gap:8px">
+                <input class="webcam-input" type="text" id="webcamDeviceId" value="446303297062" placeholder="Device ID (ex: 446303297062)">
+                <input class="webcam-input" type="text" id="webcamTapoUser" placeholder="Utilisateur Tapo (email)">
+                <input class="webcam-input" type="password" id="webcamTapoPass" placeholder="Mot de passe Tapo">
+                <div style="font-size:.62rem;color:var(--text-muted);line-height:1.5;text-align:left">
+                  💡 L'ID <strong style="color:var(--accent)">446303297062</strong> est détecté.<br>
+                  Entrez vos identifiants Tapo pour générer l'URL de snapshot.<br>
+                  <span style="color:var(--amber)">⚠ Les caméras Tapo nécessitent un accès local (même réseau) ou un proxy RTSP→MJPEG.</span>
+                </div>
+                <button class="webcam-connect-btn" onclick="connectTapo()">Connecter Tapo</button>
+              </div>
+              <!-- Panneau URL -->
+              <div id="wc-panel-url" style="width:100%;max-width:400px;display:none;flex-direction:column;gap:8px">
+                <input class="webcam-input" type="text" id="webcamUrlInput" placeholder="http://192.168.1.x:8080/video ou URL MJPEG">
+                <div style="font-size:.62rem;color:var(--text-muted);line-height:1.5;text-align:left">
+                  💡 Pour une Tapo sur réseau local : utilisez un proxy MJPEG (ex: rtsp-to-web, go2rtc) et collez l'URL HTTP ici.
+                </div>
+                <button class="webcam-connect-btn" onclick="connectWebcam()">Connecter</button>
+              </div>
+            </div>
+          </div>
+          <div id="webcamView" style="display:none">
+            <div class="webcam-frame">
+              <img id="webcamImg" src="" alt="Flux webcam" onerror="webcamError()">
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;flex-wrap:wrap;gap:8px">
+              <div style="font-size:.62rem;color:var(--text-muted)" id="webcamUrlDisplay"></div>
+              <div style="display:flex;gap:6px">
+                <button class="prog-btn" onclick="refreshWebcamSnapshot()" style="font-size:.65rem;padding:5px 12px">↺ Actualiser</button>
+                <button class="prog-btn del" onclick="disconnectWebcam()" style="font-size:.65rem;padding:5px 12px">Déconnecter</button>
+              </div>
+            </div>
+            <div style="font-size:.6rem;color:var(--text-muted);margin-top:6px" id="webcamLastRefresh"></div>
+          </div>
+        </div>
+      </div><!-- /tert-webcam -->
 
-<!-- ROUTINE RESPIRATION -->
-<div class="card urgent-keep" data-start="20" data-end="21">
-  <div class="card-title">20h15 — Routine respiration</div>
-  <div class="step"><input type="checkbox" data-key="lavage_nez" onchange="onCheck(this)"> Lavage de nez</div>
-  <div class="step"><input type="checkbox" data-key="exercices_langue" onchange="onCheck(this)"> Exercices de langue</div>
-  <div class="step"><input type="checkbox" data-key="spray" onchange="onCheck(this)"> Spray nasal (20 min après)</div>
-</div>
+      <!-- APPAREILS -->
+      <div class="tertsection" id="tert-appareils">
+        <div class="stitle">Appareils connectés <span>SmartLife / Tuya</span></div>
+        <div class="pills" id="devPills"></div>
+        <div class="grid-3" id="devGrid"><div class="loading"><div class="loading-ring"></div>Chargement…</div></div>
+      </div><!-- /tert-appareils -->
 
-<!-- ROUTINE -->
-<div class="card urgent-keep" data-start="20" data-end="21">
-  <div class="card-title">20h45 — Routine du corps</div>
-  <div class="step"><input type="checkbox" data-key="douche" onchange="onCheck(this)"> Douche</div>
-  <div class="step"><input type="checkbox" data-key="dents" onchange="onCheck(this)"> Brossage dents</div>
-  <div class="step" id="gouttiere">
-    <input type="checkbox" data-key="gouttiere_check" onchange="onCheck(this)"> Gouttière
-  </div>
-  <div class="step"><input type="checkbox" data-key="pyjama" onchange="onCheck(this)"> Pyjama</div>
-  <div class="step"><input type="checkbox" data-key="serviette" onchange="onCheck(this)"> Ranger serviette et vêtements</div>
-</div>
+    </div><!-- /sub-domotique -->
 
-<!-- LECTURE -->
-<div class="card" data-start="21" data-end="22">
-  <div class="card-title">21h15–22h — Lecture calme</div>
-  <div class="small">✔ Fantastique doux / manga calme<br>❌ horreur / stress / action intense</div>
-</div>
+    <!-- CONSEILS -->
+    <div class="subsection" id="sub-conseils">
+      <div class="stitle">Conseils personnalisés <span>IA · Météo · Récoltes</span></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div style="font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted)">Recommandations du moment</div>
+        <button class="reco-refresh" id="recoRefreshBtn" onclick="genererRecos()">&#8635; Actualiser</button>
+      </div>
+      <div id="recoContainer" class="reco-loading">
+        <div class="reco-skeleton"></div><div class="reco-skeleton"></div>
+        <div class="reco-skeleton"></div><div class="reco-skeleton"></div>
+      </div>
+      <div style="border-top:1px solid var(--border);margin-bottom:16px;padding-top:16px">
+        <div style="font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);margin-bottom:10px">Question personnalisée</div>
+      </div>
+      <div id="conseilsThemes" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+        <button class="theme-btn active" onclick="selectTheme(this,'general')">🌿 Général</button>
+        <button class="theme-btn" onclick="selectTheme(this,'semis')">🌱 Semis &amp; plantations</button>
+        <button class="theme-btn" onclick="selectTheme(this,'maladies')">🍄 Maladies &amp; traitements</button>
+        <button class="theme-btn" onclick="selectTheme(this,'arrosage')">💧 Arrosage &amp; fertilisation</button>
+        <button class="theme-btn" onclick="selectTheme(this,'verger')">🍑 Arbres fruitiers</button>
+        <button class="theme-btn" onclick="selectTheme(this,'serre')">🏠 Serre aquaponique</button>
+      </div>
+      <div id="conseilsCard" style="background:var(--surface);border:1px solid var(--border);border-radius:12px;position:relative">
+        <div id="conseilsLoading" style="display:none;padding:40px;text-align:center;flex-direction:column;align-items:center;gap:12px">
+          <div class="loading-ring"></div>
+          <div style="font-size:.72rem;color:var(--text-dim);letter-spacing:.08em">Analyse en cours…</div>
+        </div>
+        <div id="conseilsContent" style="padding:20px;font-size:.83rem;line-height:1.8;color:var(--text-dim)">
+          <div style="text-align:center;padding:30px 0;color:var(--text-muted)">
+            <div style="font-family:'Fraunces',serif;font-size:1.1rem;font-style:italic;margin-bottom:8px;color:var(--text-dim)">Prêt à te conseiller</div>
+            Choisis un thème ci-dessus ou pose une question personnalisée.
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:12px;display:flex;gap:8px">
+        <input type="text" id="conseilsInput" placeholder="Ex: Quand planter mes tomates en serre ?"
+          style="flex:1;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-family:'DM Mono',monospace;font-size:.78rem;color:var(--text);outline:none"
+          onkeydown="if(event.key==='Enter') askConseils()"
+          onfocus="this.style.borderColor='var(--teal-dark)'"
+          onblur="this.style.borderColor='var(--border)'">
+        <button onclick="askConseils()" style="background:var(--teal-dark);border:1px solid var(--accent);color:var(--accent);padding:10px 16px;border-radius:8px;font-family:'DM Mono',monospace;font-size:.75rem;cursor:pointer;white-space:nowrap;flex-shrink:0">Envoyer →</button>
+      </div>
+      <div style="margin-top:8px;font-size:.6rem;color:var(--text-muted);letter-spacing:.05em">Les conseils tiennent compte de ta météo actuelle, tes données capteurs et tes récoltes.</div>
+    </div><!-- /sub-conseils -->
 
-<!-- SOMMEIL -->
-<div class="card urgent-keep" data-start="22" data-end="24">
-  <div class="card-title">22h00 — Sommeil</div>
-  <div class="step"><input type="checkbox" data-key="bruit_blanc" onchange="onCheck(this)"> Écoute des bruits blancs</div>
-  <div class="small">"Tu es en sécurité, tout le monde est là pour toi, tu peux dormir paisiblement."</div>
-</div>
-
-<!-- TÂCHES PERMANENTES (injectées ici) -->
-<div id="perm-cards-container"></div>
-
-<!-- TÂCHES PERSO -->
-<div class="card" id="customCard">
-  <div class="card-title">📝 Tâches du soir (perso)</div>
-  <div id="custom-list"></div>
-  <div id="custom-task-form">
-    <input id="custom-task-time" type="time" placeholder="heure">
-    <input id="custom-task-input" type="text" placeholder="Ajouter une tâche..." maxlength="60">
-    <button onclick="addCustomTask()">+</button>
-  </div>
-</div>
+  </div><!-- /tab-serre -->
+</main>
 
 <script>
-/* ══════════════════════════════════════════
-   CONSTANTES
-══════════════════════════════════════════ */
-const DAY = new Date().getDay();
-const STORAGE_KEY   = "sq_checks_v2";
-const DATE_KEY      = "sq_date";
-const XP_KEY        = "sq_xp";
-const STREAK_KEY    = "sq_streak";
-const LAST_DONE_KEY = "sq_last_done";
-const RECORD_KEY    = "sq_record";
-const CUSTOM_KEY    = "sq_custom";
-const AVATAR_KEY    = "sq_avatar";
-const PERM_KEY      = "sq_perm_tasks";
+// ── IDs appareils clés ───────────────────────────────────────
+const DEVICE_WATER_TIMER_ID = 'bf1ba1c9452ce49ca6umal';
+const DEVICE_PROG_LED_ID    = 'bf2de5244b7a2128ean6nq';
 
-/* ══ BADGES DÉFINIS ══ */
-const BADGES = [
-  { id:"first",   icon:"🌱", label:"Première nuit",  cond: xp => xp >= 1 },
-  { id:"x3",      icon:"🔥", label:"3 jours d'affilée", cond:(xp,s)=>s>=3 },
-  { id:"x7",      icon:"🌟", label:"Semaine parfaite", cond:(xp,s)=>s>=7 },
-  { id:"x14",     icon:"🏆", label:"14 jours !",     cond:(xp,s)=>s>=14 },
-  { id:"xp50",    icon:"⚡", label:"50 XP",          cond: xp => xp >= 50 },
-  { id:"xp100",   icon:"💎", label:"100 XP",         cond: xp => xp >= 100 },
-  { id:"naruto",  icon:"🍥", label:"Dattebayo !",    cond:(xp,s)=>s>=5 },
-  { id:"luffy",   icon:"⚓", label:"Capitaine",      cond: xp => xp >= 30 },
-  { id:"goku",    icon:"🐉", label:"Super Saiyan",   cond:(xp,s)=>s>=10 },
-];
+// ── LIEU MÉTÉO ────────────────────────────────────────────────
+const LIEU_KEY   = 'jardin_lieu_meteo_v1';
+const COORDS_KEY = 'jardin_lieu_coords_v1';
+let lieuMeteo = localStorage.getItem(LIEU_KEY) || 'Saint-Brès 34670';
+let lieuCoords = null;
+try { lieuCoords = JSON.parse(localStorage.getItem(COORDS_KEY)); } catch(e) {}
 
-/* ══ MESSAGES MANGA PAR SEUIL ══ */
-const MANGA_MSGS = [
-  { pct:0,   speaker:"— Naruto",  text:"La soirée commence ! Dattebayo, lance-toi !" },
-  { pct:25,  speaker:"— Luffy",   text:"Un quart du chemin ! Je vais devenir le roi des pirates… et toi le roi du sommeil !" },
-  { pct:50,  speaker:"— Goku",    text:"Mi-chemin. Je sens ton énergie monter. Continue !" },
-  { pct:75,  speaker:"— Zoro",    text:"Presque là. Aucun grand guerrier n'abandonne à 75%." },
-  { pct:100, speaker:"— Itachi",  text:"Tu as tout accompli. Maintenant repose-toi. Tu le mérites." },
-];
-
-/* ══ GUIDE EMOJI PAR SEUIL ══ */
-function guideEmoji(p){
-  if(p===0)  return ["😴","En veille..."];
-  if(p<25)   return ["😶","Il t'observe..."];
-  if(p<50)   return ["🙂","Il s'éveille..."];
-  if(p<75)   return ["😊","Il est fier de toi !"];
-  if(p<100)  return ["🤩","Presque ! Allez !"];
-  return ["🥳","Mission accomplie !"];
+function saveLieu(val) {
+  lieuMeteo = val.trim() || lieuMeteo;
+  localStorage.setItem(LIEU_KEY, lieuMeteo);
+  lieuCoords = null;
+  localStorage.removeItem(COORDS_KEY);
 }
 
-/* ══ STOCKAGE ══ */
-function todayStr(){
-  const d=new Date();
-  return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();
-}
-
-function load(k){ try{ return JSON.parse(localStorage.getItem(k)); }catch(e){ return null; } }
-function save(k,v){ localStorage.setItem(k, JSON.stringify(v)); }
-
-function resetIfNewDay(){
-  const saved = localStorage.getItem(DATE_KEY);
-  if(saved !== todayStr()){
-    // Si hier la soirée était complète → incrémenter streak
-    const lastDone = localStorage.getItem(LAST_DONE_KEY);
-    const yesterday = (() => {
-      const d = new Date();
-      d.setDate(d.getDate()-1);
-      return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();
-    })();
-    let streak = load(STREAK_KEY) || 0;
-    if(lastDone === yesterday){
-      streak++;
-    } else if(lastDone !== todayStr()){
-      streak = 0; // chaîne brisée
-    }
-    let record = load(RECORD_KEY) || 0;
-    if(streak > record) record = streak;
-    save(STREAK_KEY, streak);
-    save(RECORD_KEY, record);
-    localStorage.removeItem(STORAGE_KEY);
-    localStorage.setItem(DATE_KEY, todayStr());
-  }
-}
-
-function saveState(){
-  const state={};
-  document.querySelectorAll("input[data-key]").forEach(b=>{ state[b.dataset.key]=b.checked; });
-  save(STORAGE_KEY, state);
-}
-
-function restoreState(){
-  const state = load(STORAGE_KEY);
-  if(!state) return;
-  document.querySelectorAll("input[data-key]").forEach(b=>{
-    if(state[b.dataset.key] !== undefined) b.checked = state[b.dataset.key];
-  });
-}
-
-/* ══ TÂCHES PERSO ══ */
-let customTasks = load(CUSTOM_KEY) || [];
-
-function renderCustomTasks(){
-  const list = document.getElementById("custom-list");
-  list.innerHTML="";
-  // Tri par heure
-  const sorted = customTasks.map((t,i)=>({...t,origIdx:i}))
-    .sort((a,b)=>(a.time||"99:99").localeCompare(b.time||"99:99"));
-  sorted.forEach(task=>{
-    const i = task.origIdx;
-    const div = document.createElement("div");
-    div.className="step";
-    const key = "custom_"+i;
-    const state = load(STORAGE_KEY)||{};
-    const timeLabel = task.time ? `<span style="font-size:11px;color:var(--cyan);margin-right:6px;font-weight:bold;">${task.time}</span>` : "";
-    div.innerHTML=`<input type="checkbox" data-key="${key}" onchange="onCheck(this)" ${state[key]?"checked":""}>${timeLabel}${task.label}
-      <span onclick="removeCustomTask(${i})" style="margin-left:auto;cursor:pointer;color:var(--muted);font-size:12px;">✕</span>`;
-    list.appendChild(div);
-  });
-}
-
-function addCustomTask(){
-  const inp = document.getElementById("custom-task-input");
-  const timeInp = document.getElementById("custom-task-time");
-  const val = inp.value.trim();
-  if(!val) return;
-  customTasks.push({ label: val, time: timeInp.value || "" });
-  save(CUSTOM_KEY, customTasks);
-  inp.value="";
-  timeInp.value="";
-  renderCustomTasks();
-  update();
-  scheduleCustomNotifications();
-}
-
-function removeCustomTask(i){
-  customTasks.splice(i,1);
-  save(CUSTOM_KEY, customTasks);
-  renderCustomTasks();
-  update();
-}
-
-/* ══ SON / VIBRATION ══ */
-function playCheckSound(){
-  try{
-    const ac = new (window.AudioContext||window.webkitAudioContext)();
-    const osc = ac.createOscillator();
-    const gain = ac.createGain();
-    osc.connect(gain); gain.connect(ac.destination);
-    osc.frequency.setValueAtTime(880, ac.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(1100, ac.currentTime+0.07);
-    gain.gain.setValueAtTime(0.15, ac.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+0.18);
-    osc.start(); osc.stop(ac.currentTime+0.18);
-  } catch(e){}
-  if(navigator.vibrate) navigator.vibrate(40);
-}
-
-/* ══ PROGRESSION ══ */
-let lastPctBracket = -1;
-
-function onCheck(el){
-  playCheckSound();
-  saveState();
-  update();
-}
-
-function update(){
-  saveState();
-  const boxes = Array.from(document.querySelectorAll("input[data-key]")).filter(b=>b.offsetParent!==null);
-  const checked = boxes.filter(b=>b.checked).length;
-  const p = boxes.length>0 ? Math.round((checked/boxes.length)*100) : 0;
-
-  // Barre
-  document.getElementById("bar").style.width=p+"%";
-  document.getElementById("status-pct").innerText=p+"%";
-
-  // Message d'étape
-  const msgs = [...MANGA_MSGS].reverse();
-  const msg = msgs.find(m=>p>=m.pct);
-  if(msg){
-    const bracket = MANGA_MSGS.indexOf([...MANGA_MSGS].find(m=>m.pct===msg.pct));
-    if(bracket !== lastPctBracket){
-      lastPctBracket = bracket;
-      showMangaBubble(msg.speaker, msg.text);
-    }
-  }
-
-  // Texte status
-  const statusTexts = [
-    [0,"Commençons ! 🌙"],
-    [25,"Bien parti !"],
-    [50,"À mi-chemin !"],
-    [75,"Presque fini !"],
-    [100,"🌟 Parfait !"]
-  ];
-  const st = [...statusTexts].reverse().find(s=>p>=s[0]);
-  document.getElementById("status-txt").innerText = st ? st[1] : "";
-
-  // Guide
-  const [em,nm] = guideEmoji(p);
-  document.getElementById("guide-emoji").innerText = em;
-  document.getElementById("guide-name").innerText = nm;
-
-  // Bravo
-  document.getElementById("bravo").style.display = (p===100 && boxes.length>0) ? "block" : "none";
-
-  // XP & streak si 100%
-  if(p===100 && boxes.length>0){
-    const lastDone = localStorage.getItem(LAST_DONE_KEY);
-    if(lastDone !== todayStr()){
-      localStorage.setItem(LAST_DONE_KEY, todayStr());
-      let xp = load(XP_KEY)||0;
-      xp += 10;
-      save(XP_KEY, xp);
-      // streak
-      const yesterday = (()=>{const d=new Date();d.setDate(d.getDate()-1);return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();})();
-      let streak = load(STREAK_KEY)||0;
-      if(lastDone===yesterday) streak++;
-      else streak=1;
-      let record = load(RECORD_KEY)||0;
-      if(streak>record){ record=streak; save(RECORD_KEY,record); }
-      save(STREAK_KEY, streak);
-      renderStats();
-      checkBadges();
-    }
-  }
-
-  renderStats();
-  checkBadges();
-  updateCardDone();
-}
-
-/* ══ CARD DONE (estompe les encadrés complets) ══ */
-function updateCardDone(){
-  document.querySelectorAll(".card").forEach(card=>{
-    const boxes = Array.from(card.querySelectorAll("input[data-key]")).filter(b=>b.offsetParent!==null);
-    if(boxes.length===0) return; // carte sans cases (dîner, lecture…) → ne pas estomper
-    const allDone = boxes.every(b=>b.checked);
-    card.classList.toggle("done", allDone);
-  });
-}
-
-/* ══ NOTIFICATIONS VIA SERVICE WORKER ══ */
-const NOTIF_SCHEDULE = [
-  { h:17, m:45, text:"📚 C'est l'heure des devoirs !" },
-  { h:18, m:0,  text:"🎒 Prépare ton sac d'école !" },
-  { h:18, m:20, text:"🎸 Guitare — lance le timer !" },
-  { h:18, m:30, text:"🧹 Range ta chambre et tes affaires." },
-  { h:18, m:55, text:"🐹 N'oublie pas les cochons d'Inde !" },
-  { h:20, m:15, text:"💧 Routine respiration : lavage de nez, exercices de langue, spray nasal." },
-  { h:20, m:45, text:"🚿 Douche, dents, pyjama !" },
-  { h:21, m:15, text:"📖 Temps lecture calme jusqu'à 22h." },
-  { h:22, m:0,  text:"🌙 C'est l'heure de dormir. Bonne nuit !" },
-];
-
-let swReg = null;
-
-async function setupServiceWorker(){
-  if(!("serviceWorker" in navigator)) return;
+async function geocodeLieu(lieu) {
+  if (lieuCoords && lieuCoords.lieu === lieu) return lieuCoords;
   try {
-    // Inline Service Worker via Blob URL
-    const swCode = `
-self.addEventListener('message', e => {
-  if(e.data && e.data.type === 'SCHEDULE'){
-    const { delayMs, title, body } = e.data;
-    setTimeout(() => {
-      self.registration.showNotification(title, {
-        body,
-        icon: '/icon-192.png',
-        badge: '/icon-192.png',
-        vibrate: [200, 100, 200],
-        tag: 'sleepquest-' + Date.now()
-      });
-    }, delayMs);
-  }
-});
-self.addEventListener('notificationclick', e => { e.notification.close(); });
-    `;
-    const blob = new Blob([swCode], {type:'application/javascript'});
-    const swUrl = URL.createObjectURL(blob);
-    swReg = await navigator.serviceWorker.register(swUrl, {scope:'/'});
-    await navigator.serviceWorker.ready;
-    console.log('SW prêt');
-  } catch(err){
-    console.warn('SW échec:', err);
-  }
+    const r = await fetch('https://geocoding-api.open-meteo.com/v1/search?name='+encodeURIComponent(lieu)+'&count=1&language=fr&format=json');
+    const d = await r.json();
+    const res = d.results?.[0];
+    if (!res) return null;
+    const coords = { lieu, lat: res.latitude, lon: res.longitude, name: res.name, country: res.country_code };
+    lieuCoords = coords;
+    localStorage.setItem(COORDS_KEY, JSON.stringify(coords));
+    return coords;
+  } catch(e) { return null; }
 }
 
-async function requestNotifPermission(){
-  if(!("Notification" in window)) return;
-  if(Notification.permission === "default"){
-    const perm = await Notification.requestPermission();
-    if(perm === "granted") scheduleAllNotifications();
-  } else if(Notification.permission === "granted"){
-    scheduleAllNotifications();
-  }
+// ── SEUILS MÉTIER CENTRALISÉS ────────────────────────────────
+const SEUILS = {
+  temp:  { critMin: 5,  warnMin: 8,  warnMax: 30, critMax: 32 },
+  humid: { critMin: 40, warnMin: 50, warnMax: 80, critMax: 90 },
+};
+
+function statusTemp(v) {
+  if (v === null || v === undefined) return 'gray';
+  if (v < SEUILS.temp.critMin  || v > SEUILS.temp.critMax)  return 'red';
+  if (v < SEUILS.temp.warnMin  || v > SEUILS.temp.warnMax)  return 'amber';
+  return 'green';
+}
+function statusHumid(v) {
+  if (v === null || v === undefined) return 'gray';
+  if (v < SEUILS.humid.critMin || v > SEUILS.humid.critMax) return 'red';
+  if (v < SEUILS.humid.warnMin || v > SEUILS.humid.warnMax) return 'amber';
+  return 'green';
+}
+const STATUS_DOT   = { green:'dot-green', amber:'dot-amber', red:'dot-red', gray:'dot-gray' };
+const STATUS_COLOR = { green:'#2dd4c8',   amber:'#fbbf24',   red:'#f87171', gray:'#2d6b66' };
+
+function heureActuelle() { return new Date().getHours() + new Date().getMinutes() / 60; }
+
+// ── Serre Brief ──────────────────────────────────────────────
+function serreBriefMsg(val, key, st) {
+  const unit  = key === 'temp' ? '°C' : '%';
+  const label = key === 'temp' ? 'Température' : 'Humidité';
+  if (st === 'green') return label + ' ' + val + unit + ' — dans la plage cible';
+  const seuil = key === 'temp' ? SEUILS.temp : SEUILS.humid;
+  if (val < seuil.warnMin) return label + ' ' + val + unit + ' — trop basse';
+  if (val > seuil.warnMax) return label + ' ' + val + unit + ' — trop haute';
+  return label + ' ' + val + unit;
 }
 
-function scheduleAllNotifications(){
-  const now = new Date();
-  NOTIF_SCHEDULE.forEach(n => {
-    const target = new Date();
-    target.setHours(n.h, n.m, 0, 0);
-    const delay = target - now;
-    if(delay > 0) sendToSW(delay, "🌙 Sleep Quest", n.text);
+function actionRecommandee(alertes, temp, hum) {
+  if (!alertes.length) return null;
+  const h = heureActuelle();
+  const hasTempHigh = alertes.some(a => a.key === 'temp' && a.val > SEUILS.temp.warnMax);
+  const hasHumHigh  = alertes.some(a => a.key === 'hum'  && a.val > SEUILS.humid.warnMax);
+  const hasHumLow   = alertes.some(a => a.key === 'hum'  && a.val < SEUILS.humid.warnMin);
+  const hasTempLow  = alertes.some(a => a.key === 'temp' && a.val < SEUILS.temp.warnMin);
+  if (hasTempHigh && hasHumHigh) return 'Ouvrir les aérations et ventiler immédiatement';
+  if (hasTempHigh) return 'Ouvrir la porte et activer le ventilateur';
+  if (hasHumHigh)  return 'Aérer la serre pour réduire l\'humidité';
+  if (hasHumLow) {
+    if (h >= 16.5 && temp !== null && temp > 30)
+      return '⚠️ Humidité basse mais NE PAS humidifier ce soir : temp > 30°C et nuit approche — risque oïdium.';
+    return 'Activer la brumisation ou augmenter l\'arrosage';
+  }
+  if (hasTempLow) return 'Fermer la porte et vérifier le chauffage';
+  return null;
+}
+
+// ── Météo ────────────────────────────────────────────────────
+async function fetchMeteo() {
+  try {
+    const coords = await geocodeLieu(lieuMeteo);
+    const lat = coords ? coords.lat : 43.61;
+    const lon = coords ? coords.lon : 3.87;
+    const r = await fetch('https://api.open-meteo.com/v1/forecast?latitude='+lat+'&longitude='+lon+'&current=temperature_2m,weathercode,relativehumidity_2m&daily=temperature_2m_max&timezone=Europe/Paris&forecast_days=1');
+    const d = await r.json();
+    return { temp: d.current?.temperature_2m, max: d.daily?.temperature_2m_max?.[0], code: d.current?.weathercode, humExt: d.current?.relativehumidity_2m, lieu: lieuMeteo };
+  } catch(e) { return null; }
+}
+
+window.getMeteoContexte = () => ({ lieu: lieuMeteo });
+window.getSerreData = () => {
+  const sensor = getSerreTHSensor();
+  return { temp: sensor ? getStat(sensor, 'va_temperature') : null, hum: sensor ? getStat(sensor, 'va_humidity') : null };
+};
+
+function meteoLineHTML(meteo) {
+  const codes = {0:'Ensoleillé',1:'Dégagé',2:'Nuageux',3:'Couvert',45:'Brouillard',51:'Bruine',61:'Pluie',80:'Averses',95:'Orageux'};
+  let meteoTxt = '';
+  if (meteo) {
+    const desc = codes[meteo.code] || (meteo.code <= 3 ? 'Dégagé' : meteo.code <= 67 ? 'Pluie' : 'Variable');
+    const t  = meteo.temp != null ? Math.round(meteo.temp) + '°C' : '';
+    const mx = meteo.max  != null ? ', max ' + Math.round(meteo.max) + '°C' : '';
+    meteoTxt = ' : ' + t + mx + ' — ' + desc;
+  }
+  return `<span class="lieu-meteo-wrap" id="lieuWrap">
+    <span>Météo à </span>
+    <span class="lieu-meteo-label" id="lieuLabel" onclick="openLieuEdit()" title="Cliquer pour modifier">${escHtml(lieuMeteo)}</span>
+    <span id="lieuMeteoTxt">${meteoTxt}</span>
+    <span id="lieuForm" style="display:none;align-items:center;gap:5px">
+      <input class="lieu-meteo-input" id="lieuInput" type="text" value="${escHtml(lieuMeteo)}"
+        onkeydown="if(event.key==='Enter') saveLieuEdit(); if(event.key==='Escape') closeLieuEdit();"
+        placeholder="Ville ou code postal">
+      <button class="lieu-meteo-save" onclick="saveLieuEdit()">✓ OK</button>
+      <button class="lieu-meteo-save" style="background:transparent;border-color:var(--border);color:var(--text-muted)" onclick="closeLieuEdit()">✕</button>
+    </span>
+  </span>`;
+}
+
+function escHtml(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function openLieuEdit() {
+  document.getElementById('lieuLabel').style.display = 'none';
+  document.getElementById('lieuMeteoTxt').style.display = 'none';
+  const form = document.getElementById('lieuForm');
+  form.style.display = 'inline-flex';
+  const inp = document.getElementById('lieuInput');
+  inp.value = lieuMeteo; inp.focus(); inp.select();
+}
+function closeLieuEdit() {
+  const label = document.getElementById('lieuLabel'), txt = document.getElementById('lieuMeteoTxt'), form = document.getElementById('lieuForm');
+  if (!label || !form) return;
+  label.style.display = ''; txt.style.display = ''; form.style.display = 'none';
+}
+async function saveLieuEdit() {
+  const inp = document.getElementById('lieuInput');
+  if (!inp) return;
+  const val = inp.value.trim();
+  if (!val) { closeLieuEdit(); return; }
+  saveLieu(val); closeLieuEdit();
+  const labelEl = document.getElementById('lieuLabel');
+  if (labelEl) labelEl.textContent = lieuMeteo;
+  const txtEl = document.getElementById('lieuMeteoTxt');
+  if (txtEl) txtEl.textContent = ' — mise à jour…';
+  const meteo = await fetchMeteo();
+  renderSerreBrief(meteo);
+}
+
+// ── Capteurs hors ligne ──────────────────────────────────────
+function checkSensorWarnings() {
+  const container = document.getElementById('sensorWarnings');
+  if (!container) return;
+  const warnings = [];
+  devices.forEach(d => {
+    const name = (d.name || '').toLowerCase();
+    const isHumSensor = name.includes('eau tour') || name.includes('humidité bac') || name.includes('humidite bac');
+    if (isHumSensor && !d.online)
+      warnings.push(`<div class="sensor-warning"><span class="sensor-warning-icon">🔋</span><span><strong>${escHtml(d.name)}</strong> est hors ligne — vérifier les piles du capteur d'humidité.</span></div>`);
   });
-  // Tâches perso avec heure
-  scheduleCustomNotifications();
+  container.innerHTML = warnings.join('');
 }
 
-function scheduleCustomNotifications(){
-  const now = new Date();
-  customTasks.forEach(task => {
-    if(!task.time) return;
-    const [th, tm] = task.time.split(":").map(Number);
-    const target = new Date();
-    target.setHours(th, tm, 0, 0);
-    const delay = target - now;
-    if(delay > 0) sendToSW(delay, "🌙 Sleep Quest", "⏰ " + task.label);
+// ── Serre Brief ──────────────────────────────────────────────
+async function renderSerreBrief(meteoData) {
+  const el = document.getElementById('serreBrief');
+  if (!el) return;
+  const sensor = getSerreTHSensor();
+  const temp = sensor ? getStat(sensor, 'va_temperature') : null;
+  const hum  = sensor ? getStat(sensor, 'va_humidity')    : null;
+  const tSt  = statusTemp(temp), hSt = statusHumid(hum);
+  const alertes = [];
+  if (tSt !== 'green' && tSt !== 'gray') alertes.push({ key:'temp', val:temp, st:tSt });
+  if (hSt !== 'green' && hSt !== 'gray') alertes.push({ key:'hum',  val:hum,  st:hSt });
+  const globalSt = alertes.some(a => a.st === 'red') ? 'crit' : alertes.length ? 'warn' : 'ok';
+  const titles   = { ok:'✅ La serre va bien', warn:'⚠️ '+alertes.length+' point'+(alertes.length>1?'s':'')+' à surveiller', crit:'🚨 Intervention urgente requise' };
+  const meteo    = meteoData !== undefined ? meteoData : await fetchMeteo();
+  const items    = [];
+  if (globalSt === 'ok') {
+    if (temp !== null) items.push({ st:'ok', txt:'Température '+temp+'°C — dans la plage cible' });
+    if (hum  !== null) items.push({ st:'ok', txt:'Humidité '+hum+'% — optimal' });
+    if (temp === null && hum === null) items.push({ st:'ok', txt:'Capteurs en ligne' });
+  } else {
+    alertes.forEach(a => items.push({ st: a.st === 'red' ? 'crit' : 'warn', txt: serreBriefMsg(a.val, a.key, a.st) }));
+    const action = actionRecommandee(alertes, temp, hum);
+    if (action) items.push({ st: globalSt, txt: '→ ' + action });
+  }
+  const humExtStr = (meteo && meteo.humExt != null) ? 'Hum. ext. ' + meteo.humExt + '% · ' : '';
+  const ts = lastRefresh ? humExtStr + 'Maj ' + new Date(lastRefresh).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}) : humExtStr;
+  el.innerHTML = `<div class="serre-brief brief-${globalSt}">
+    <div class="sb-head"><div class="sb-title">${titles[globalSt]}</div></div>
+    <div class="sb-items">${items.map(i=>`<div class="sb-row ${i.st}"><span class="sb-dot ${i.st}"></span><span>${i.txt}</span></div>`).join('')}</div>
+    <div class="sb-meta">${meteoLineHTML(meteo)}${ts?'<span>'+ts+'</span>':''}</div>
+  </div>`;
+}
+
+// ── État global ──────────────────────────────────────────────
+let devices = [];
+let lastRefresh = null;
+let charts = { temp: null, hum: null };
+
+// ── localStorage ─────────────────────────────────────────────
+const HISTORY_KEY = 'jardin_history_v1';
+const MAX_LOCAL   = 1440;
+function loadLocal() { try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); } catch(e) { return []; } }
+function saveLocal(h) { try { localStorage.setItem(HISTORY_KEY, JSON.stringify(h)); } catch(e) {} }
+function addLocalPoint(temp, hum) {
+  const h = loadLocal();
+  h.push({ t: new Date().toISOString(), temp, hum });
+  while (h.length > MAX_LOCAL) h.shift();
+  saveLocal(h);
+}
+
+// ── Rééchantillonnage ─────────────────────────────────────────
+function getTargetSlots(range) {
+  const now = Date.now(), slots = [];
+  if (range === '24h') {
+    const s = new Date(); s.setHours(0,0,0,0); s.setDate(s.getDate()-1);
+    for (let t = s.getTime(); t <= now; t += 3600000) slots.push(t);
+  } else if (range === '3d') {
+    const s = new Date(now-3*86400000); s.setHours(0,0,0,0);
+    for (let d = new Date(s); d.getTime() <= now; d.setDate(d.getDate()+1))
+      [3.5,9.5,13.5,16.5].forEach(h => { const sl = new Date(d); sl.setHours(Math.floor(h),(h%1)*60,0,0); if(sl.getTime()<=now) slots.push(sl.getTime()); });
+  } else if (range === '7d') {
+    const s = new Date(now-7*86400000); s.setHours(0,0,0,0);
+    for (let d = new Date(s); d.getTime() <= now; d.setDate(d.getDate()+1))
+      [6,14].forEach(h => { const sl = new Date(d); sl.setHours(h,0,0,0); if(sl.getTime()<=now) slots.push(sl.getTime()); });
+  } else if (range === '30d') {
+    const s = new Date(now-30*86400000); s.setHours(0,0,0,0);
+    for (let d = new Date(s); d.getTime() <= now; d.setDate(d.getDate()+1)) {
+      const sl = new Date(d); sl.setHours(11,0,0,0); if(sl.getTime()<=now) slots.push(sl.getTime());
+    }
+  }
+  return slots;
+}
+
+function resampleToSlots(history, range) {
+  const slots = getTargetSlots(range);
+  if (!slots.length || !history.length) return [];
+  const tolerances = { '24h':30*60000, '3d':90*60000, '7d':4*3600000, '30d':12*3600000 };
+  const tol = tolerances[range] || 30*60000;
+  return slots.map(slotMs => {
+    let best = null, bestDist = Infinity;
+    for (const p of history) {
+      const d = Math.abs(new Date(p.t).getTime() - slotMs);
+      if (d < bestDist && d <= tol) { best = p; bestDist = d; }
+    }
+    return best ? { ...best, _slotMs: slotMs } : null;
+  }).filter(Boolean);
+}
+
+function filterLocal(history, range) {
+  const ms = { '24h':86400000, '3d':259200000, '7d':604800000, '30d':2592000000 };
+  const cutoff = Date.now() - (ms[range] || ms['24h']);
+  return resampleToSlots(history.filter(p => new Date(p.t).getTime() >= cutoff), range);
+}
+
+function fmtTick(point, range) {
+  const d = new Date(point._slotMs || point.t);
+  const jours = ['dim','lun','mar','mer','jeu','ven','sam'];
+  if (range === '24h') return d.getHours().toString().padStart(2,'0') + 'h';
+  if (range === '3d' || range === '7d') return jours[d.getDay()] + ' ' + d.getHours() + 'h';
+  if (range === '30d') return d.getDate().toString();
+  return d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+}
+
+// ── Google Sheets ─────────────────────────────────────────────
+async function pushToSheets(temp, hum) {
+  try { await fetch('/api/sheets?action=append_history&temp='+temp+'&hum='+hum); } catch(e) {}
+}
+async function fetchHistory(range) {
+  const res = await fetch('/api/sheets?action=get_history&range='+range);
+  const data = await res.json();
+  if (!data.success) throw new Error(data.error || 'Erreur Sheets');
+  return data;
+}
+
+// ── Sélecteurs de plage ──────────────────────────────────────
+let currentRangeTemp = '24h', currentRangeHum = '24h';
+let isLoadingTemp = false, isLoadingHum = false;
+
+function setRangeTemp(range, btn) {
+  currentRangeTemp = range;
+  btn.closest('.range-selector').querySelectorAll('.range-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  loadAndRenderTemp(range);
+}
+function setRangeHum(range, btn) {
+  currentRangeHum = range;
+  btn.closest('.range-selector').querySelectorAll('.range-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  loadAndRenderHum(range);
+}
+
+async function fetchHistoryData(range) {
+  const apiRange = range === '3d' ? '7d' : range;
+  const data = await fetchHistory(apiRange);
+  if (data.data && data.data.length > 0) {
+    if (range === '3d') { const c = Date.now()-3*86400000; data.data = data.data.filter(p=>new Date(p.t).getTime()>=c); }
+    data.data = resampleToSlots(data.data, range);
+  }
+  return data;
+}
+
+async function loadAndRenderTemp(range) {
+  if (isLoadingTemp) return;
+  isLoadingTemp = true;
+  const infoEl = document.getElementById('chartTempInfo');
+  infoEl.className = 'history-info history-loading'; infoEl.textContent = 'Chargement…';
+  let history = [], source = '';
+  try {
+    const res = await fetch('/api/sheets?action=get_history_serre&range=' + range);
+    const data = await res.json();
+    if (data.success && data.data?.length) {
+      history = data.data; source = 'Sheets';
+    } else {
+      history = filterLocal(loadLocal(), range); source = 'local';
+    }
+  } catch(e) {
+    history = filterLocal(loadLocal(), range); source = 'local';
+  }
+  infoEl.className = 'history-info';
+  infoEl.textContent = history.length ? history.length + ' pts · ' + source : 'Aucune donnée';
+  renderChartTemp(history, range);
+  isLoadingTemp = false;
+}
+
+async function loadAndRenderHum(range) {
+  if (isLoadingHum) return;
+  isLoadingHum = true;
+  const infoEl = document.getElementById('chartHumInfo');
+  infoEl.className = 'history-info history-loading'; infoEl.textContent = 'Chargement…';
+  let history = [], source = '';
+  try {
+    const res = await fetch('/api/sheets?action=get_history_serre&range=' + range);
+    const data = await res.json();
+    if (data.success && data.data?.length) {
+      history = data.data; source = 'Sheets';
+    } else {
+      history = filterLocal(loadLocal(), range); source = 'local';
+    }
+  } catch(e) {
+    history = filterLocal(loadLocal(), range); source = 'local';
+  }
+  infoEl.className = 'history-info';
+  infoEl.textContent = history.length ? history.length + ' pts · ' + source : 'Aucune donnée';
+  renderChartHum(history, range);
+  isLoadingHum = false;
+}
+
+async function loadAndRenderCharts() {
+  await Promise.all([loadAndRenderTemp(currentRangeTemp), loadAndRenderHum(currentRangeHum)]);
+}
+
+// ── Navigation ────────────────────────────────────────────────
+function showTab(name, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  btn.classList.add('active');
+}
+function showSub(name, btn) {
+  document.querySelectorAll('.subsection').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab-sub').forEach(t => t.classList.remove('active'));
+  document.getElementById('sub-'+name).classList.add('active');
+  btn.classList.add('active');
+}
+function showSubConseils(btn) { showSub('conseils', btn); if (Date.now()-recosCacheTime>RECOS_CACHE_DURATION) genererRecos(); }
+function showTert(name, btn) {
+  document.querySelectorAll('.tertsection').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab-tert').forEach(t => t.classList.remove('active'));
+  document.getElementById('tert-'+name).classList.add('active');
+  btn.classList.add('active');
+}
+function showTertAppareils(btn) { showTert('appareils', btn); renderDevices(); }
+
+// ── API Tuya ──────────────────────────────────────────────────
+async function fetchDevices() {
+  const r = await fetch('/api/tuya?action=devices');
+  const d = await r.json();
+  if (!d.success) throw new Error(d.error || 'Erreur Tuya');
+  devices = d.devices;
+}
+async function controlDevice(deviceId, code, value, _retry = true) {
+  const r = await fetch('/api/tuya', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'control', deviceId, code, value })
   });
+  const data = await r.json();
+  // Tuya retourne success:false si token expiré ou device offline
+  if (!data.success && _retry) {
+    // Attendre 2s et réessayer une fois (token se régénère côté api/tuya.js)
+    await new Promise(res => setTimeout(res, 2000));
+    return controlDevice(deviceId, code, value, false);
+  }
+  // Mettre à jour status_list local pour cohérence immédiate
+  const dev = devices.find(d => d.id === deviceId);
+  if (dev?.status_list) {
+    const s = dev.status_list.find(x => x.code === code);
+    if (s) s.value = value;
+  }
+  return data;
 }
 
-function sendToSW(delayMs, title, body){
-  if(!swReg || !swReg.active) {
-    // Fallback : setTimeout direct (fonctionne si la page reste ouverte)
-    setTimeout(() => {
-      if(Notification.permission === "granted")
-        new Notification(title, {body, icon:''});
-    }, delayMs);
+// ── Helpers ───────────────────────────────────────────────────
+function getStat(d, code) { return d.status_list?.find(x => x.code === code)?.value ?? null; }
+function getDeviceById(id) { return devices.find(d => d.id === id); }
+function getSerreTHSensor() {
+  return devices.find(d => d.status_list?.some(x=>x.code==='va_temperature') && d.status_list?.some(x=>x.code==='va_humidity'));
+}
+function getCat(d) {
+  const n=(d.name||'').toLowerCase(), c=(d.category||'').toLowerCase();
+  if (n.includes('commutateur')||n.includes('switch')||n.includes('canal')||c==='kg') return 'switch';
+  if (n.includes('temp')||n.includes('humid')||c==='wk'||c==='wsdcg') return 'sensor';
+  if (c==='zwjcy') return 'soil'; if (c==='ldcg') return 'light';
+  if (c==='sj') return 'water'; if (c==='mcs') return 'door';
+  if (c==='cz') return 'plug'; if (c==='ggq') return 'valve';
+  return 'other';
+}
+
+// ── Lectures capteurs en temps réel ──────────────────────────
+function getCurrentTempSerre() {
+  if (_lastSensorValues.temp !== null) return _lastSensorValues.temp;
+  const sensor = getSerreTHSensor();
+  return sensor ? getStat(sensor, 'va_temperature') : null;
+}
+function getCurrentHumSerre() {
+  if (_lastSensorValues.hum !== null) return _lastSensorValues.hum;
+  const sensor = getSerreTHSensor();
+  return sensor ? getStat(sensor, 'va_humidity') : null;
+}
+function getCurrentTempEau() {
+  try { const d = JSON.parse(localStorage.getItem('bassin_myfood_latest')||'null'); return d?.waterTemp ?? null; } catch(e) { return null; }
+}
+
+// ── Dashboard métriques (temp serre + humidité serre uniquement) ──
+function renderAlerts() { document.getElementById('alertBanners').innerHTML = ''; }
+
+function renderSerreMetrics() {
+  const el = document.getElementById('serreMetrics');
+  const sensor = getSerreTHSensor();
+  if (!sensor) { el.innerHTML='<div class="err" style="grid-column:1/-1"><strong>Capteur serre introuvable</strong></div>'; return; }
+  const temp = getStat(sensor,'va_temperature');
+  const hum  = getStat(sensor,'va_humidity');
+  const tempC = temp !== null ? Math.round(temp)+'°' : '—';
+  const humV  = hum  !== null ? hum+'%' : '—';
+  const tSt = statusTemp(temp), hSt = statusHumid(hum);
+  el.innerHTML = `
+    <div class="metric-card" style="padding:12px 14px">
+      <div class="metric-label"><span class="dot ${STATUS_DOT[tSt]}"></span>🌡️ Temp. air</div>
+      <div style="font-family:'Fraunces',serif;font-size:2.2rem;font-weight:300;line-height:1;color:${STATUS_COLOR[tSt]};margin:6px 0 2px">${tempC}</div>
+      <div class="metric-unit">°C — serre</div>
+    </div>
+    <div class="metric-card" style="padding:12px 14px">
+      <div class="metric-label"><span class="dot ${STATUS_DOT[hSt]}"></span>💧 Humidité</div>
+      <div style="font-family:'Fraunces',serif;font-size:2.2rem;font-weight:300;line-height:1;color:${STATUS_COLOR[hSt]};margin:6px 0 2px">${humV}</div>
+      <div class="metric-unit">% — serre</div>
+    </div>`;
+}
+
+// ── Graphiques ────────────────────────────────────────────────
+function chartOpts(color, unit, range) {
+  const maxTicks = range === '30d' ? 10 : range === '7d' || range === '3d' ? 10 : 8;
+  return {
+    responsive:true, maintainAspectRatio:false, animation:false,
+    plugins:{ legend:{display:false}, tooltip:{ backgroundColor:'#102422', borderColor:'#1a3d3a', borderWidth:1, titleColor:'#7ab8b4', bodyColor:'#d0eeec', callbacks:{label:ctx=>ctx.parsed.y?.toFixed(1)+unit} } },
+    scales:{
+      x:{ticks:{color:'#2d6b66',font:{size:9},maxTicksLimit:maxTicks,maxRotation:30},grid:{color:'rgba(26,61,58,.4)'}},
+      y:{ticks:{color:'#2d6b66',font:{size:9},callback:v=>v?.toFixed(1)+unit},grid:{color:'rgba(26,61,58,.4)'}}
+    }
+  };
+}
+function chartDs(data, color, history, pointColors) {
+  const usePC = pointColors && pointColors.length === data.length;
+  return { data, borderColor:color, backgroundColor:color+'18', borderWidth:2, pointRadius:history.length>100?0:3, pointBackgroundColor:usePC?pointColors:color, pointBorderColor:usePC?pointColors:color, fill:true, tension:0.4 };
+}
+function tempPointColors(h) { return h.map(p=>{ const s=statusTemp(p.temp); return s==='green'?'#2dd4c8':STATUS_COLOR[s]; }); }
+function humidPointColors(h) { return h.map(p=>{ const s=statusHumid(p.hum); return s==='green'?'#5ee8de':STATUS_COLOR[s]; }); }
+
+function renderChartTemp(history, range) {
+  const labels = history.map(p => fmtTick(p, range));
+  const ctx = document.getElementById('chartTemp').getContext('2d');
+  if (charts.temp) charts.temp.destroy();
+  if (!history.length) { renderChartEmpty(ctx,'temp'); return; }
+  charts.temp = new Chart(ctx,{type:'line',data:{labels,datasets:[chartDs(history.map(p=>p.temp),'#2dd4c8',history,tempPointColors(history))]},options:chartOpts('#2dd4c8','°C',range)});
+}
+function renderChartHum(history, range) {
+  const labels = history.map(p => fmtTick(p, range));
+  const ctx = document.getElementById('chartHum').getContext('2d');
+  if (charts.hum) charts.hum.destroy();
+  if (!history.length) { renderChartEmpty(ctx,'hum'); return; }
+  charts.hum = new Chart(ctx,{type:'line',data:{labels,datasets:[chartDs(history.map(p=>p.hum),'#5ee8de',history,humidPointColors(history))]},options:chartOpts('#5ee8de','%',range)});
+}
+function renderChartEmpty(ctx, key) {
+  if (charts[key]) { charts[key].destroy(); charts[key]=null; }
+  ctx.clearRect(0,0,ctx.canvas.width,ctx.canvas.height);
+  ctx.fillStyle='#2d6b66'; ctx.font='11px monospace'; ctx.textAlign='center';
+  ctx.fillText('Aucune donnée pour cette période',ctx.canvas.width/2,ctx.canvas.height/2);
+}
+
+// ── Commandes ─────────────────────────────────────────────────
+function updateCommandStates() {
+  const wt = getDeviceById(DEVICE_WATER_TIMER_ID);
+  const pl = getDeviceById(DEVICE_PROG_LED_ID);
+  if (wt) {
+    const onR=getStat(wt,'switch_2')===true; const tR=document.getElementById('toggle-rhone'), bR=document.getElementById('badge-rhone');
+    tR.checked=onR; tR.disabled=!wt.online; bR.textContent=onR?'Actif':'Inactif'; bR.className='status-badge '+(onR?'badge-on':'badge-off');
+    const onB=getStat(wt,'switch_1')===true; const tB=document.getElementById('toggle-brumisation'), bB=document.getElementById('badge-brumisation');
+    tB.checked=onB; tB.disabled=!wt.online; bB.textContent=onB?'Actif':'Inactif'; bB.className='status-badge '+(onB?'badge-on':'badge-off');
+  }
+  if (pl) {
+    const onL=getStat(pl,'switch_2')===true; const tL=document.getElementById('toggle-lumiere'), bL=document.getElementById('badge-lumiere');
+    tL.checked=onL; tL.disabled=!pl.online; bL.textContent=onL?'Allumée':'Éteinte'; bL.className='status-badge '+(onL?'badge-on':'badge-off');
+    const onRe=getStat(pl,'switch_4')===true; const tRe=document.getElementById('toggle-remous'), bRe=document.getElementById('badge-remous');
+    tRe.checked=onRe; tRe.disabled=!pl.online; bRe.textContent=onRe?'Actif':'Inactif'; bRe.className='status-badge '+(onRe?'badge-on':'badge-off');
+  }
+}
+
+async function cmdRhone(val)      { document.getElementById('toggle-rhone').disabled=true;      await controlDevice(DEVICE_WATER_TIMER_ID,'switch_2',val); updateCommandStates(); document.getElementById('toggle-rhone').disabled=false; }
+async function cmdBrumisation(val){ document.getElementById('toggle-brumisation').disabled=true; await controlDevice(DEVICE_WATER_TIMER_ID,'switch_1',val); updateCommandStates(); document.getElementById('toggle-brumisation').disabled=false; }
+async function cmdLumiere(val)    { document.getElementById('toggle-lumiere').disabled=true;    await controlDevice(DEVICE_PROG_LED_ID,'switch_2',val);    updateCommandStates(); document.getElementById('toggle-lumiere').disabled=false; }
+async function cmdRemous(val)     { document.getElementById('toggle-remous').disabled=true;     await controlDevice(DEVICE_PROG_LED_ID,'switch_4',val);    updateCommandStates(); document.getElementById('toggle-remous').disabled=false; }
+
+// ── Appareils ─────────────────────────────────────────────────
+function renderDevCard(d) {
+  const cat=getCat(d);
+  if (cat==='switch'||cat==='valve') {
+    const chs=['switch_1','switch_2','switch_3','switch_4'].filter(c=>d.status_list?.some(x=>x.code===c));
+    return `<div class="device-card"><div class="device-header"><div><div class="device-name">${d.name}</div><div class="device-type">${cat==='valve'?'Vanne':'Commutateur'} ${chs.length} canaux</div></div><span class="dot ${d.online?'dot-green':'dot-gray'}"></span></div><div class="ch-row">${chs.map((c,i)=>{const on=getStat(d,c);return '<div class="ch-btn '+(on?'on':'')+'" onclick="toggleCh(\''+d.id+'\',\''+c+'\','+!on+')">C'+(i+1)+'<br>'+(on?'●':'○')+'</div>';}).join('')}</div><div class="ts">${chs.filter(c=>getStat(d,c)).length}/${chs.length} actifs</div></div>`;
+  }
+  if (cat==='sensor') {
+    const temp=getStat(d,'va_temperature'),hum=getStat(d,'va_humidity');
+    return `<div class="device-card"><div class="device-header"><div><div class="device-name">${d.name}</div><div class="device-type">Temp / Humidité</div></div><span class="dot ${d.online?'dot-green':'dot-gray'}"></span></div><div style="display:flex;gap:14px">${temp!=null?'<div><div style="font-family:Fraunces,serif;font-size:1.4rem;font-weight:300">'+(temp/10).toFixed(1)+'°</div><div class="ts">TEMP</div></div>':''}${hum!=null?'<div><div style="font-family:Fraunces,serif;font-size:1.4rem;font-weight:300">'+hum+'%</div><div class="ts">HUMID</div></div>':''}</div></div>`;
+  }
+  if (cat==='soil') {
+    const hum=getStat(d,'humidity'),temp=getStat(d,'temp_current'),bat=getStat(d,'battery_percentage');
+    return `<div class="device-card"><div class="device-header"><div><div class="device-name">${d.name}</div><div class="device-type">Humidité sol</div></div><span class="dot ${d.online?'dot-green':'dot-gray'}"></span></div><div style="display:flex;gap:14px">${hum!=null?'<div><div style="font-family:Fraunces,serif;font-size:1.4rem;font-weight:300">'+hum+'%</div><div class="ts">SOL</div></div>':''}${temp!=null?'<div><div style="font-family:Fraunces,serif;font-size:1.4rem;font-weight:300">'+(temp/10).toFixed(1)+'°</div><div class="ts">TEMP</div></div>':''}</div>${bat!=null?'<div class="ts">🔋 '+bat+'%</div>':''}</div>`;
+  }
+  if (cat==='door') {
+    const open=getStat(d,'doorcontact_state');
+    return `<div class="device-card"><div class="device-header"><div><div class="device-name">${d.name}</div><div class="device-type">Capteur porte</div></div><span class="dot ${open?'dot-amber':'dot-green'}"></span></div><div style="font-family:'Fraunces',serif;font-size:1.2rem;font-weight:300;color:${open?'var(--amber)':'var(--accent)'}">${open?'Ouverte':'Fermée'}</div></div>`;
+  }
+  if (cat==='water') {
+    const alarm=getStat(d,'watersensor_state')==='alarm',bat=getStat(d,'battery_percentage');
+    return `<div class="device-card"><div class="device-header"><div><div class="device-name">${d.name}</div><div class="device-type">Détecteur fuite</div></div><span class="dot ${alarm?'dot-red':'dot-green'}"></span></div><div style="font-family:'Fraunces',serif;font-size:1.2rem;font-weight:300;color:${alarm?'var(--red)':'var(--accent)'}">${alarm?'Alarme':'OK'}</div>${bat!=null?'<div class="ts">🔋 '+bat+'%</div>':''}</div>`;
+  }
+  if (cat==='plug') {
+    const sw=getStat(d,'switch_1');
+    return `<div class="device-card"><div class="device-header"><div><div class="device-name">${d.name}</div><div class="device-type">Prise</div></div>${sw!=null?'<label class="toggle"><input type="checkbox" '+(sw?'checked':'')+' onchange="toggleDev(\''+d.id+'\',\'switch_1\',this.checked)"><span class="toggle-slider"></span></label>':'<span class="dot '+(d.online?'dot-green':'dot-gray')+'"></span>'}</div><div class="ts">${d.online?'<span class="status-ok">En ligne</span>':'<span class="status-err">Hors ligne</span>'}</div></div>`;
+  }
+  return `<div class="device-card"><div class="device-header"><div><div class="device-name">${d.name}</div><div class="device-type">${d.category||'—'}</div></div><span class="dot ${d.online?'dot-green':'dot-gray'}"></span></div><div class="ts">${d.online?'En ligne':'Hors ligne'}</div></div>`;
+}
+
+function renderDevices() {
+  const el=document.getElementById('devGrid');
+  if (!el) return;
+  if (!devices.length) { el.innerHTML='<div class="err"><strong>Aucun appareil</strong></div>'; return; }
+  el.innerHTML=devices.map(renderDevCard).join('');
+  const online=devices.filter(d=>d.online).length;
+  document.getElementById('devPills').innerHTML=
+    '<div class="pill"><span class="dot dot-green"></span>'+online+' en ligne</div>'+
+    '<div class="pill"><span class="dot dot-gray"></span>'+(devices.length-online)+' hors ligne</div>'+
+    '<div class="pill">'+devices.length+' appareils</div>';
+}
+
+async function toggleCh(id,code,val) { await controlDevice(id,code,val); const d=devices.find(x=>x.id===id); if(d?.status_list){const s=d.status_list.find(x=>x.code===code);if(s)s.value=val;} renderDevices(); }
+async function toggleDev(id,code,val) { await controlDevice(id,code,val); }
+
+// ── PROGRAMMATION ENRICHIE ────────────────────────────────────
+const PROG_KEY = 'jardin_programmes_v1';
+const DEVICE_MAP = {
+  'rhone-2':       { id: DEVICE_WATER_TIMER_ID, code: 'switch_2', label: 'Arrosage bas-Rhône' },
+  'brumisation-1': { id: DEVICE_WATER_TIMER_ID, code: 'switch_1', label: 'Brumisation' },
+  'lumiere-2':     { id: DEVICE_PROG_LED_ID,    code: 'switch_2', label: 'Lumière serre' },
+  'remous-4':      { id: DEVICE_PROG_LED_ID,    code: 'switch_4', label: 'Bain à remous' },
+};
+const JOURS_LABELS = ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
+
+function loadProgrammes() { try { return JSON.parse(localStorage.getItem(PROG_KEY) || '[]'); } catch(e) { return []; } }
+function saveProgrammes(data) { try { localStorage.setItem(PROG_KEY, JSON.stringify(data)); } catch(e) {} }
+
+function readNewProgForm() {
+  const device      = document.getElementById('new-prog-device').value;
+  const action      = document.getElementById('new-prog-action').value;
+  const time        = document.getElementById('new-prog-time').value;
+  const endtime     = document.getElementById('new-prog-endtime').value;
+  const durationRaw  = parseInt(document.getElementById('new-prog-duration').value) || 0;
+  const durationUnit = document.getElementById('new-prog-duration-unit').value;
+  // Stocker en secondes en interne, avec l'unité d'affichage
+  const duration = durationRaw;
+  const durationUnitSaved = durationUnit;
+  const repeatEvery = parseInt(document.getElementById('new-prog-repeat-every').value) || 0;
+  const days        = Array.from(document.querySelectorAll('#new-prog-days input:checked')).map(i => parseInt(i.value));
+
+  // Conditions
+  const condTempEauOp    = document.getElementById('new-cond-tempeau-op').value;
+  const condTempEauVal   = parseFloat(document.getElementById('new-cond-tempeau-val').value);
+  const condTempSerreOp  = document.getElementById('new-cond-tempserre-op').value;
+  const condTempSerreVal = parseFloat(document.getElementById('new-cond-tempserre-val').value);
+  const condHumOp        = document.getElementById('new-cond-hum-op').value;
+  const condHumVal       = parseFloat(document.getElementById('new-cond-hum-val').value);
+
+  const conditions = [];
+  if (condTempEauOp   && !isNaN(condTempEauVal))   conditions.push({ sensor:'tempEau',    op:condTempEauOp,   val:condTempEauVal });
+  if (condTempSerreOp && !isNaN(condTempSerreVal)) conditions.push({ sensor:'tempSerre',  op:condTempSerreOp, val:condTempSerreVal });
+  if (condHumOp       && !isNaN(condHumVal))        conditions.push({ sensor:'humSerre',   op:condHumOp,       val:condHumVal });
+
+  return { device, action, time, endtime, duration, durationUnit: durationUnitSaved, repeatEvery, days, conditions };
+}
+
+function conditionLabel(c) {
+  const sensors = { tempEau:'Temp. eau', tempSerre:'Temp. serre', humSerre:'Humidité serre' };
+  const units   = { tempEau:'°C', tempSerre:'°C', humSerre:'%' };
+  const op = c.op === 'gt' ? '>' : '<';
+  return `${sensors[c.sensor]||c.sensor} ${op} ${c.val}${units[c.sensor]||''}`;
+}
+
+function progDescription(p) {
+  const dev = DEVICE_MAP[p.device] || { label: p.device };
+  const joursStr = p.days.sort().map(d => JOURS_LABELS[d]).join(', ');
+  const durStr = p.duration > 0 ? p.duration + ' ' + (p.durationUnit || 'min') : 'sans limite';
+  let desc = `${dev.label} — ${p.action === 'on' ? 'Activation' : 'Désactivation'} à ${p.time}`;
+  if (p.endtime) desc += ` jusqu'à ${p.endtime}`;
+  desc += ` · ${joursStr} · ${durStr}`;
+  if (p.repeatEvery > 0) desc += ` · 🔁 toutes les ${p.repeatEvery} min`;
+  if (p.conditions && p.conditions.length) desc += ` · si : ${p.conditions.map(conditionLabel).join(' ET ')}`;
+  return desc;
+}
+
+function previewProgramme() {
+  const p = readNewProgForm();
+  const el = document.getElementById('prog-preview');
+  if (!p.time || !p.days.length) { el.style.display='none'; return; }
+  el.style.display = 'block';
+  el.innerHTML = '📋 ' + progDescription(p);
+}
+
+function addProgramme() {
+  const p = readNewProgForm();
+  if (!p.time || !p.days.length) { alert('Remplis l\'heure et sélectionne au moins un jour.'); return; }
+  const progs = loadProgrammes();
+  progs.push({ id: 'p'+Date.now(), ...p, actif: true });
+  saveProgrammes(progs);
+  document.getElementById('prog-preview').style.display = 'none';
+  renderProgrammes();
+}
+
+function deleteProgramme(id) {
+  if (!confirm('Supprimer ce programme ?')) return;
+  saveProgrammes(loadProgrammes().filter(p => p.id !== id));
+  renderProgrammes();
+}
+
+function toggleProgramme(id) {
+  const progs = loadProgrammes();
+  const p = progs.find(x => x.id === id);
+  if (p) { p.actif = !p.actif; saveProgrammes(progs); renderProgrammes(); }
+}
+
+function renderProgrammes() {
+  const el = document.getElementById('progList');
+  const progs = loadProgrammes();
+  if (!progs.length) {
+    el.innerHTML = '<div class="prog-empty">Aucun programme créé. Utilisez le formulaire ci-dessous ou une idée suggérée.</div>';
     return;
   }
-  swReg.active.postMessage({ type:'SCHEDULE', delayMs, title, body });
+
+  const JOURS_NOMS = ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
+  const DEVICE_OPTS = [
+    { value:'rhone-2',       label:'Arrosage bas-Rhône (Canal 2)' },
+    { value:'brumisation-1', label:'Brumisation (Canal 1)' },
+    { value:'lumiere-2',     label:'Lumière serre (Canal 2)' },
+    { value:'remous-4',      label:'Bain à remous (Canal 4)' },
+  ];
+
+  el.innerHTML = progs.map(p => {
+    const id = p.id;
+    const condBadges = (p.conditions||[]).map(c =>
+      `<span class="cond-badge">🔧 ${conditionLabel(c)}</span>`
+    ).join('');
+    const repeatBadge = p.repeatEvery > 0 ? `<span class="cond-badge">🔁 /${p.repeatEvery}min</span>` : '';
+    const endBadge = p.endtime ? `<span class="cond-badge">⏹ fin ${p.endtime}</span>` : '';
+
+    // Pré-remplissage du formulaire d'édition
+    const devOpts = DEVICE_OPTS.map(d =>
+      `<option value="${d.value}"${p.device===d.value?' selected':''}>${d.label}</option>`
+    ).join('');
+
+    const durationUnit = p.durationUnit || 'min';
+
+    const daysCheckboxes = [1,2,3,4,5,6,0].map((d,i) => {
+      const checked = (p.days||[]).includes(d) ? 'checked' : '';
+      const lbl = ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'][i];
+      return `<label style="display:flex;align-items:center;gap:3px;font-size:.65rem;color:var(--text-dim);cursor:pointer"><input type="checkbox" value="${d}" ${checked} style="accent-color:var(--accent)">${lbl}</label>`;
+    }).join('');
+
+    const condTempEauOp  = p.conditions?.find(c=>c.sensor==='tempEau')?.op  || '';
+    const condTempEauVal = p.conditions?.find(c=>c.sensor==='tempEau')?.val  || '';
+    const condTempSerOp  = p.conditions?.find(c=>c.sensor==='tempSerre')?.op || '';
+    const condTempSerVal = p.conditions?.find(c=>c.sensor==='tempSerre')?.val|| '';
+    const condHumOp      = p.conditions?.find(c=>c.sensor==='humSerre')?.op  || '';
+    const condHumVal     = p.conditions?.find(c=>c.sensor==='humSerre')?.val || '';
+
+    const selOp = (val) => ['','gt','lt'].map(v =>
+      `<option value="${v}"${v===val?' selected':''}>${v===''?'— aucune':v==='gt'?'> (sup.)':'< (inf.)'}</option>`
+    ).join('');
+
+    return `
+    <div class="prog-card" id="prog-card-${id}" style="${p.actif?'border-color:rgba(45,212,200,.25)':'opacity:.6'}">
+      <!-- Vue résumé -->
+      <div id="prog-view-${id}">
+        <div class="prog-header">
+          <div style="flex:1;min-width:0">
+            <div class="prog-title">${progDescription(p)}</div>
+            <div style="margin-top:4px;display:flex;flex-wrap:wrap;gap:4px">${repeatBadge}${endBadge}${condBadges}</div>
+          </div>
+          <div style="display:flex;gap:6px;align-items:center;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end">
+            <span class="prog-badge ${p.actif?'actif':'inactif'}">${p.actif?'Actif':'Inactif'}</span>
+            <button class="prog-btn" onclick="toggleProgramme('${id}')" style="font-size:.62rem;padding:4px 10px">${p.actif?'Pause':'Activer'}</button>
+            <button class="prog-btn" onclick="openEditProg('${id}')" style="font-size:.62rem;padding:4px 10px;background:rgba(45,212,200,.08);border-color:rgba(45,212,200,.3);color:var(--accent)">✏ Modifier</button>
+            <button class="prog-btn del" onclick="deleteProgramme('${id}')" style="font-size:.62rem;padding:4px 10px">Suppr.</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Formulaire d'édition inline (caché par défaut) -->
+      <div id="prog-edit-${id}" style="display:none;border-top:1px dashed rgba(45,212,200,.2);margin-top:12px;padding-top:14px">
+        <div style="font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:10px;font-weight:500">✏ Modifier le programme</div>
+
+        <div class="prog-row">
+          <span class="prog-lbl">Appareil</span>
+          <select class="prog-select" id="ep-device-${id}" style="flex:1">${devOpts}</select>
+        </div>
+        <div class="prog-row">
+          <span class="prog-lbl">Action</span>
+          <select class="prog-select" id="ep-action-${id}">
+            <option value="on"${p.action==='on'?' selected':''}>Activer</option>
+            <option value="off"${p.action==='off'?' selected':''}>Désactiver</option>
+          </select>
+        </div>
+
+        <div class="prog-section-sep">⏱ Horaires</div>
+        <div class="prog-row">
+          <span class="prog-lbl">Heure de début</span>
+          <input class="prog-input" type="time" id="ep-time-${id}" value="${p.time||''}" style="flex:1">
+        </div>
+        <div class="prog-row">
+          <span class="prog-lbl">Heure de fin</span>
+          <input class="prog-input" type="time" id="ep-endtime-${id}" value="${p.endtime||''}" placeholder="Optionnel" style="flex:1">
+        </div>
+        <div class="prog-row">
+          <span class="prog-lbl">Durée action</span>
+          <input class="prog-input" type="number" id="ep-duration-${id}" value="${p.duration||0}" min="0" max="3600" style="width:70px">
+          <select class="prog-select" id="ep-duration-unit-${id}" style="width:auto;padding:4px 8px;font-size:.72rem;margin-left:4px">
+            <option value="min"${durationUnit==='min'?' selected':''}>min</option>
+            <option value="sec"${durationUnit==='sec'?' selected':''}>sec</option>
+          </select>
+          <span style="font-size:.62rem;color:var(--text-muted);margin-left:4px">(0 = sans limite)</span>
+        </div>
+
+        <div class="prog-section-sep">🔁 Répétition</div>
+        <div class="prog-row">
+          <span class="prog-lbl">Répéter toutes les</span>
+          <input class="prog-input" type="number" id="ep-repeat-${id}" value="${p.repeatEvery||0}" min="0" max="1440" style="width:70px">
+          <span style="font-size:.62rem;color:var(--text-muted);margin-left:4px">minutes</span>
+        </div>
+
+        <div class="prog-section-sep">📅 Jours actifs</div>
+        <div class="prog-row">
+          <span class="prog-lbl">Jours</span>
+          <div id="ep-days-${id}" style="display:flex;gap:4px;flex-wrap:wrap">${daysCheckboxes}</div>
+        </div>
+
+        <div class="prog-section-sep">🔧 Conditions (optionnel)</div>
+        <div class="prog-row">
+          <span class="prog-lbl">Temp. eau</span>
+          <select class="prog-select" id="ep-cond-tempeau-op-${id}" style="width:90px">${selOp(condTempEauOp)}</select>
+          <input class="prog-input" type="number" id="ep-cond-tempeau-val-${id}" value="${condTempEauVal}" placeholder="°C" step="0.5" style="width:70px">
+          <span style="font-size:.62rem;color:var(--text-muted)">°C</span>
+        </div>
+        <div class="prog-row">
+          <span class="prog-lbl">Temp. serre</span>
+          <select class="prog-select" id="ep-cond-tempserre-op-${id}" style="width:90px">${selOp(condTempSerOp)}</select>
+          <input class="prog-input" type="number" id="ep-cond-tempserre-val-${id}" value="${condTempSerVal}" placeholder="°C" step="0.5" style="width:70px">
+          <span style="font-size:.62rem;color:var(--text-muted)">°C</span>
+        </div>
+        <div class="prog-row">
+          <span class="prog-lbl">Humidité serre</span>
+          <select class="prog-select" id="ep-cond-hum-op-${id}" style="width:90px">${selOp(condHumOp)}</select>
+          <input class="prog-input" type="number" id="ep-cond-hum-val-${id}" value="${condHumVal}" placeholder="%" step="1" style="width:70px">
+          <span style="font-size:.62rem;color:var(--text-muted)">%</span>
+        </div>
+
+        <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
+          <button class="prog-btn" onclick="saveEditProg('${id}')" style="flex:1;min-width:120px">💾 Enregistrer</button>
+          <button class="prog-btn" onclick="cancelEditProg('${id}')" style="background:transparent;border-color:var(--border);color:var(--text-muted)">Annuler</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
 }
 
-function checkNotifications(){ /* remplacé par Service Worker */ }
-
-/* ══ ICÔNE APP (canvas) ══ */
-function generateAppIcon(){
-  const c = document.createElement("canvas");
-  c.width=180; c.height=180;
-  const ctx=c.getContext("2d");
-  // Fond dégradé
-  const grd=ctx.createRadialGradient(90,90,10,90,90,120);
-  grd.addColorStop(0,"#1a1060");
-  grd.addColorStop(1,"#0b1026");
-  // Coins arrondis
-  ctx.beginPath();
-  ctx.moveTo(22,0); ctx.lineTo(158,0);
-  ctx.quadraticCurveTo(180,0,180,22);
-  ctx.lineTo(180,158); ctx.quadraticCurveTo(180,180,158,180);
-  ctx.lineTo(22,180); ctx.quadraticCurveTo(0,180,0,158);
-  ctx.lineTo(0,22); ctx.quadraticCurveTo(0,0,22,0);
-  ctx.closePath();
-  ctx.fillStyle=grd; ctx.fill();
-  // Étoiles
-  [[130,28,5,"#ffe066"],[148,55,3,"#ffe066"],[110,18,3,"#a66bff"],[155,38,3,"#7cf7ff"],[95,42,2,"#ffffff"],[160,70,2,"#ffffff"]].forEach(([x,y,r,col])=>{
-    ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2);
-    ctx.fillStyle=col; ctx.globalAlpha=0.85; ctx.fill(); ctx.globalAlpha=1;
-  });
-  // Lune
-  ctx.font="90px serif"; ctx.textAlign="center"; ctx.textBaseline="middle";
-  ctx.fillText("🌙",90,92);
-  // Texte SLEEP
-  ctx.font="bold 20px 'Arial Black',Arial";
-  ctx.fillStyle="#7cf7ff";
-  ctx.shadowColor="#7cf7ff"; ctx.shadowBlur=8;
-  ctx.fillText("SLEEP",90,155);
-  ctx.shadowBlur=0;
-  const dataUrl = c.toDataURL("image/png");
-  const link = document.getElementById("app-icon");
-  if(link) link.href=dataUrl;
+function openEditProg(id) {
+  document.getElementById('prog-view-' + id).style.display = 'none';
+  document.getElementById('prog-edit-' + id).style.display = 'block';
+  // Scroll vers le formulaire
+  document.getElementById('prog-card-' + id).scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
-
-function showMangaBubble(speaker, text){
-  document.getElementById("manga-speaker").innerText = speaker;
-  document.getElementById("manga-text").innerText = text;
-  const b = document.getElementById("manga-bubble");
-  b.classList.remove("show");
-  void b.offsetWidth;
-  b.classList.add("show");
+function cancelEditProg(id) {
+  document.getElementById('prog-edit-' + id).style.display = 'none';
+  document.getElementById('prog-view-' + id).style.display = 'block';
 }
 
-/* ══ STATS ══ */
-function renderStats(){
-  const xp = load(XP_KEY)||0;
-  const streak = load(STREAK_KEY)||0;
-  const record = load(RECORD_KEY)||0;
-  document.getElementById("xp-val").innerText = xp;
-  document.getElementById("streak-val").innerText = streak+"🔥";
-  document.getElementById("record-line").innerText = "Record : "+record+" jours";
+function saveEditProg(id) {
+  const progs = loadProgrammes();
+  const idx = progs.findIndex(p => p.id === id);
+  if (idx === -1) return;
+
+  const device        = document.getElementById(`ep-device-${id}`).value;
+  const action        = document.getElementById(`ep-action-${id}`).value;
+  const time          = document.getElementById(`ep-time-${id}`).value;
+  const endtime       = document.getElementById(`ep-endtime-${id}`).value;
+  const duration      = parseInt(document.getElementById(`ep-duration-${id}`).value) || 0;
+  const durationUnit  = document.getElementById(`ep-duration-unit-${id}`).value;
+  const repeatEvery   = parseInt(document.getElementById(`ep-repeat-${id}`).value) || 0;
+  const days          = Array.from(document.querySelectorAll(`#ep-days-${id} input:checked`)).map(i => parseInt(i.value));
+
+  const condTempEauOp    = document.getElementById(`ep-cond-tempeau-op-${id}`).value;
+  const condTempEauVal   = parseFloat(document.getElementById(`ep-cond-tempeau-val-${id}`).value);
+  const condTempSerreOp  = document.getElementById(`ep-cond-tempserre-op-${id}`).value;
+  const condTempSerreVal = parseFloat(document.getElementById(`ep-cond-tempserre-val-${id}`).value);
+  const condHumOp        = document.getElementById(`ep-cond-hum-op-${id}`).value;
+  const condHumVal       = parseFloat(document.getElementById(`ep-cond-hum-val-${id}`).value);
+
+  const conditions = [];
+  if (condTempEauOp   && !isNaN(condTempEauVal))   conditions.push({ sensor:'tempEau',   op:condTempEauOp,   val:condTempEauVal });
+  if (condTempSerreOp && !isNaN(condTempSerreVal)) conditions.push({ sensor:'tempSerre', op:condTempSerreOp, val:condTempSerreVal });
+  if (condHumOp       && !isNaN(condHumVal))        conditions.push({ sensor:'humSerre',  op:condHumOp,       val:condHumVal });
+
+  if (!time || !days.length) { alert('Remplis l\'heure et sélectionne au moins un jour.'); return; }
+
+  progs[idx] = { ...progs[idx], device, action, time, endtime, duration, durationUnit, repeatEvery, days, conditions };
+  saveProgrammes(progs);
+  renderProgrammes();
 }
 
-/* ══ BADGES ══ */
-function checkBadges(){
-  const xp = load(XP_KEY)||0;
-  const streak = load(STREAK_KEY)||0;
-  const grid = document.getElementById("badges-grid");
-  grid.innerHTML="";
-  BADGES.forEach(b=>{
-    const earned = b.cond(xp,streak);
-    const div = document.createElement("div");
-    div.className="badge"+(earned?" earned":"");
-    div.innerHTML=`<span class="badge-icon">${b.icon}</span><span>${b.label}</span>`;
-    grid.appendChild(div);
-  });
+function applyIdee(id) {
+  const idees = {
+    'arrosage-matin':     { device:'rhone-2',       action:'on', time:'07:00', endtime:'', duration:45, repeatEvery:0, days:[0,1,2,3,4,5,6], conditions:[] },
+    'brumisation-chaleur':{ device:'brumisation-1', action:'on', time:'08:00', endtime:'16:30', duration:0, repeatEvery:10, days:[1,2,3,4,5,6,0],
+      conditions:[{ sensor:'humSerre', op:'lt', val:52 }, { sensor:'tempSerre', op:'gt', val:25 }] },
+    'lumiere-hiver':      { device:'lumiere-2',     action:'on', time:'06:00', endtime:'08:30', duration:150, repeatEvery:0, days:[1,2,3,4,5,6,0], conditions:[] },
+    'remous-nuit':        { device:'remous-4',      action:'on', time:'22:00', endtime:'', duration:30, repeatEvery:0, days:[0,1,2,3,4,5,6], conditions:[] },
+    'arrosage-week':      { device:'rhone-2',       action:'on', time:'08:00', endtime:'', duration:60, repeatEvery:0, days:[0,6], conditions:[] },
+  };
+  const idee = idees[id];
+  if (!idee) return;
+  const progs = loadProgrammes();
+  progs.push({ id: 'p'+Date.now(), ...idee, actif: true });
+  saveProgrammes(progs);
+  renderProgrammes();
 }
 
-/* ══ SURBRILLANCE ÉTAPE COURANTE ══ */
-function highlightCurrentStep(){
-  const h = new Date().getHours();
-  document.querySelectorAll(".card[data-start]").forEach(card=>{
-    const s = parseInt(card.dataset.start);
-    const e = parseInt(card.dataset.end);
-    if(h>=s && h<e) card.classList.add("active-step");
-    else card.classList.remove("active-step");
-  });
+// ── Vérification des conditions capteurs pour un programme ───
+function checkConditions(conditions) {
+  if (!conditions || !conditions.length) return true;
+  const tempSerre = getCurrentTempSerre();
+  const humSerre  = getCurrentHumSerre();
+  const tempEau   = getCurrentTempEau();
+  for (const c of conditions) {
+    if (!c.op) continue; // condition non configurée, ignorée
+    let current;
+    if (c.sensor === 'tempSerre') current = tempSerre;
+    else if (c.sensor === 'humSerre') current = humSerre;
+    else if (c.sensor === 'tempEau') current = tempEau;
+    // Capteur absent : bloquer par sécurité (ne pas déclencher sans données)
+    if (current == null) return false;
+    const threshold = parseFloat(c.val); // forcer nombre
+    if (isNaN(threshold)) continue;
+    if (c.op === 'gt' && current <= threshold) return false;
+    if (c.op === 'lt' && current >= threshold) return false;
+  }
+  return true;
 }
 
-/* ══ COUNTDOWN 22H ══ */
-function updateCountdown(){
+// ── Webcam ─────────────────────────────────────────────────────
+const WEBCAM_KEY = 'jardin_webcam_url_v1';
+let _webcamRefreshTimer = null;
+
+function wcTab(tab) {
+  document.getElementById('wc-panel-tapo').style.display = tab === 'tapo' ? 'flex' : 'none';
+  document.getElementById('wc-panel-url').style.display  = tab === 'url'  ? 'flex' : 'none';
+  document.getElementById('wc-tab-tapo').style.cssText = tab === 'tapo'
+    ? 'flex:1;padding:6px 4px;border:none;border-radius:6px;font-family:"DM Mono",monospace;font-size:.65rem;cursor:pointer;background:var(--bg);color:var(--accent);border:1px solid var(--border)'
+    : 'flex:1;padding:6px 4px;border:none;border-radius:6px;font-family:"DM Mono",monospace;font-size:.65rem;cursor:pointer;background:transparent;color:var(--text-muted)';
+  document.getElementById('wc-tab-url').style.cssText = tab === 'url'
+    ? 'flex:1;padding:6px 4px;border:none;border-radius:6px;font-family:"DM Mono",monospace;font-size:.65rem;cursor:pointer;background:var(--bg);color:var(--accent);border:1px solid var(--border)'
+    : 'flex:1;padding:6px 4px;border:none;border-radius:6px;font-family:"DM Mono",monospace;font-size:.65rem;cursor:pointer;background:transparent;color:var(--text-muted)';
+}
+
+function connectTapo() {
+  const deviceId = document.getElementById('webcamDeviceId').value.trim() || '446303297062';
+  // Les caméras Tapo exposent un endpoint snapshot sur le réseau local
+  // Format standard Tapo C-series : http://<ip>/stream1 ou snapshot via port 554 (RTSP)
+  // Sans proxy, on propose l'URL du portail web Tapo (qui peut afficher la caméra si authentifié)
+  // L'URL la plus universelle pour un snapshot Tapo local : http://<ip>/snapshot.jpg
+  // Comme on n'a que le Device ID (pas l'IP locale), on informe l'utilisateur et on propose une URL modèle
+  const info = `Caméra Tapo détectée : ${deviceId}\n\nPour afficher le flux dans le navigateur :\n1. Trouvez l'IP locale de la caméra dans votre routeur\n2. Entrez l'URL : http://<IP>/stream1\n   ou installez go2rtc/rtsp-to-web pour convertir RTSP → MJPEG\n\nL'URL RTSP native est : rtsp://admin:<motdepasse>@<IP>/stream1`;
+  alert(info);
+  // Basculer sur le panneau URL avec un template pré-rempli
+  document.getElementById('webcamUrlInput').value = 'http://192.168.1.x/stream1';
+  wcTab('url');
+}
+
+function connectWebcam() {
+  const url = document.getElementById('webcamUrlInput').value.trim();
+  if (!url) { alert('Entrez l\'URL du flux webcam.'); return; }
+  localStorage.setItem(WEBCAM_KEY, url);
+  showWebcam(url);
+}
+
+function showWebcam(url) {
+  document.getElementById('webcamPlaceholder').style.display = 'none';
+  const view = document.getElementById('webcamView'); view.style.display = 'block';
+  document.getElementById('webcamImg').src = url;
+  document.getElementById('webcamUrlDisplay').textContent = url;
+  // Auto-refresh toutes les 5s si c'est un snapshot (URL se terminant par .jpg/.png)
+  if (_webcamRefreshTimer) clearInterval(_webcamRefreshTimer);
+  if (/\.(jpg|jpeg|png|bmp)(\?|$)/i.test(url)) {
+    _webcamRefreshTimer = setInterval(() => refreshWebcamSnapshot(), 5000);
+    updateWebcamRefreshTime();
+  }
+}
+
+function refreshWebcamSnapshot() {
+  const img = document.getElementById('webcamImg');
+  if (!img.src) return;
+  // Ajouter un timestamp pour contourner le cache navigateur
+  const base = img.src.split('?')[0];
+  img.src = base + '?t=' + Date.now();
+  updateWebcamRefreshTime();
+}
+
+function updateWebcamRefreshTime() {
+  const el = document.getElementById('webcamLastRefresh');
+  if (el) el.textContent = 'Dernière actualisation : ' + new Date().toLocaleTimeString('fr-FR');
+}
+
+function disconnectWebcam() {
+  if (_webcamRefreshTimer) { clearInterval(_webcamRefreshTimer); _webcamRefreshTimer = null; }
+  localStorage.removeItem(WEBCAM_KEY);
+  document.getElementById('webcamImg').src = '';
+  document.getElementById('webcamView').style.display = 'none';
+  document.getElementById('webcamPlaceholder').style.display = 'block';
+}
+function webcamError() {
+  const view = document.getElementById('webcamView');
+  if (view.style.display !== 'none') {
+    document.getElementById('webcamImg').style.display = 'none';
+    const frame = view.querySelector('.webcam-frame');
+    if (frame && !frame.querySelector('.no-signal')) {
+      const ns = document.createElement('div'); ns.className = 'no-signal';
+      ns.innerHTML = '<div style="font-size:2rem">📵</div><div>Flux indisponible</div><div style="font-size:.62rem;color:var(--text-muted);margin-top:4px">Vérifiez l\'URL ou la connexion réseau</div>';
+      frame.appendChild(ns);
+    }
+  }
+}
+function initWebcam() { const saved = localStorage.getItem(WEBCAM_KEY); if (saved) showWebcam(saved); }
+
+// ── Refresh principal ─────────────────────────────────────────
+let lastHistoryRecord = 0;
+// Cache des dernières valeurs capteurs — partagé avec le scheduler
+const _lastSensorValues = { temp: null, hum: null, ts: 0 };
+
+async function refreshAll() {
+  const btn=document.getElementById('refreshBtn');
+  btn.classList.add('spinning');
+  document.getElementById('hs').innerHTML='<span class="status-ok">Actualisation…</span>';
+  let tuyaOk=false;
+  try {
+    await fetchDevices(); tuyaOk=true; lastRefresh=new Date().toISOString();
+    const sensor=getSerreTHSensor();
+    if (sensor) {
+      const temp=getStat(sensor,'va_temperature'), hum=getStat(sensor,'va_humidity');
+      if (temp!==null) { _lastSensorValues.temp=temp; _lastSensorValues.hum=hum; _lastSensorValues.ts=Date.now(); }
+      const now=Date.now();
+      if (temp!==null&&hum!==null&&(now-lastHistoryRecord)>=30*60*1000) { addLocalPoint(temp,hum); lastHistoryRecord=now; }
+    }
+  } catch(e) { console.error('Tuya:',e); }
+  renderAlerts(); renderSerreMetrics(); updateCommandStates(); renderDevices();
+  checkSensorWarnings(); renderSerreBrief(); await loadAndRenderCharts();
+  if (tuyaOk) { const online=devices.filter(d=>d.online).length; document.getElementById('hs').innerHTML='<span class="status-ok">↑ '+online+'/'+devices.length+'</span>'; }
+  else document.getElementById('hs').innerHTML='<span class="status-err">Erreur connexion</span>';
+  btn.classList.remove('spinning');
+}
+
+function goRecoltes() { window.location.href='/recoltes.html'; }
+function goBassin()   { window.location.href='/bassin.html'; }
+function lieuContextPrompt() { return 'Lieu du jardinier : '+lieuMeteo+' (France). '; }
+
+// ── Conseils IA ───────────────────────────────────────────────
+let recosCacheTime=0;
+const RECOS_CACHE_DURATION=2*60*60*1000;
+
+async function genererRecos() {
+  const btn=document.getElementById('recoRefreshBtn');
+  const container=document.getElementById('recoContainer');
+  btn.classList.add('spinning');
+  container.className='reco-loading';
+  container.innerHTML='<div class="reco-skeleton"></div>'.repeat(4);
+  const sensor=getSerreTHSensor();
+  const temp=sensor?getStat(sensor,'va_temperature'):null;
+  const hum=sensor?getStat(sensor,'va_humidity'):null;
+  const wt=getDeviceById(DEVICE_WATER_TIMER_ID);
+  const rhoneOn=wt?getStat(wt,'switch_2'):null;
+  const door=devices.find(d=>getCat(d)==='door');
+  const doorOpen=door?getStat(door,'doorcontact_state'):null;
+  let recoltesSummary='';
+  try { const rec=JSON.parse(localStorage.getItem('jardin_recoltes_v2')||'[]'); recoltesSummary=rec.sort((a,b)=>b.date.localeCompare(a.date)).slice(0,5).map(r=>r.vegetal+' ('+r.poids+'g, '+r.lieu+')').join(', '); } catch(e) {}
+  const today=new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});
+  const month=new Date().getMonth()+1;
+  const season=month>=3&&month<=5?'printemps':month>=6&&month<=8?'été':month>=9&&month<=11?'automne':'hiver';
+  const hour=new Date().getHours();
+  const moment=hour<12?'matin':hour<18?'après-midi':'soir';
+  const sysPrompt=`Tu es un expert en maraîchage, permaculture et aquaponie. ${lieuContextPrompt()}Serre aquaponique MyFood City, bacs surélevés, potager pleine terre, arrosage Bas Rhône automatisé. Arbres fruitiers : abricotier, 2 figuiers, 2 pommiers colonnaires, noisetier, amandier, pêchers, nectarinier, mandarinier, citronnier, kiwai, 3 bananiers. Cultures : tomates, aubergines, courgettes, poivrons, piments, concombres, melons, pastèques, salades, blettes, aromatiques.
+Données : ${today} (${season}, ${moment}), temp serre=${temp!==null?temp+'°C':'inconnue'}, humidité=${hum!==null?hum+'%':'inconnue'}, porte=${doorOpen!==null?(doorOpen?'ouverte':'fermée'):'inconnue'}, arrosage=${rhoneOn!==null?(rhoneOn?'actif':'inactif'):'inconnu'}, récoltes récentes : ${recoltesSummary||'aucune'}.`;
+  const question=`Génère 4 recommandations JSON pour ce jardinier (${today}, ${moment}, ${season}, ${lieuMeteo}). Réponds UNIQUEMENT avec un tableau JSON valide. Format : [{"emoji":"🌡️","urgence":"urgent","titre":"Titre max 6 mots","description":"1 phrase concrète."},...] urgence = urgent|semaine|info.`;
+  try {
+    const r=await fetch('/api/conseils',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({system:sysPrompt,question,mode:'json'})});
+    const text=await r.text();
+    if (!text.trim()) throw new Error('Réponse vide');
+    const data=JSON.parse(text);
+    if (!data.success) throw new Error(data.error||'Erreur inconnue');
+    let recos;
+    try { recos=JSON.parse(data.text.trim()); } catch(e) { const m=data.text.match(/\[[\s\S]*\]/); if(!m) throw new Error('JSON introuvable'); recos=JSON.parse(m[0]); }
+    container.className='reco-grid';
+    container.innerHTML=recos.map(r=>{
+      const bg=r.urgence==='urgent'?'rgba(248,113,113,.15)':r.urgence==='semaine'?'rgba(251,191,36,.12)':'rgba(45,212,200,.1)';
+      const co=r.urgence==='urgent'?'var(--red)':r.urgence==='semaine'?'var(--amber)':'var(--accent)';
+      const bd=r.urgence==='urgent'?'rgba(248,113,113,.3)':r.urgence==='semaine'?'rgba(251,191,36,.25)':'rgba(45,212,200,.2)';
+      const lbl=r.urgence==='urgent'?'URGENT':r.urgence==='semaine'?'CETTE SEMAINE':'INFO';
+      return '<div class="reco-card '+(r.urgence||'info')+'"><div class="reco-header"><span class="reco-emoji">'+(r.emoji||'🌿')+'</span><span style="display:inline-block;padding:2px 7px;border-radius:10px;font-size:.58rem;letter-spacing:.06em;font-weight:500;background:'+bg+';color:'+co+';border:1px solid '+bd+'">'+lbl+'</span></div><div class="reco-titre">'+(r.titre||'')+'</div><div class="reco-desc">'+(r.description||'')+'</div></div>';
+    }).join('');
+    recosCacheTime=Date.now();
+  } catch(e) {
+    const surcharge=e.message?.includes('503')||e.message?.includes('UNAVAILABLE');
+    container.className='reco-grid';
+    container.innerHTML='<div class="reco-card info" style="grid-column:1/-1;text-align:center;color:var(--text-muted);font-size:.75rem;padding:20px">'+(surcharge?'⏳ Gemini surchargé, nouvel essai dans 15s…':'❌ '+e.message)+'</div>';
+    if (surcharge) setTimeout(()=>genererRecos(),15000);
+  }
+  btn.classList.remove('spinning');
+}
+
+const THEMES={
+  general:`Donne-moi une vue d'ensemble des conseils les plus importants pour mon jardin en ce moment.`,
+  semis:`Quels semis et plantations dois-je faire maintenant ou dans les 2-3 prochaines semaines ?`,
+  maladies:`Quelles maladies et ravageurs dois-je surveiller ? Quels traitements préventifs ?`,
+  arrosage:`Quels sont mes besoins en arrosage et fertilisation actuellement ?`,
+  verger:`Quelles interventions sur mes arbres fruitiers en ce moment ?`,
+  serre:`Conseils spécifiques pour ma serre aquaponique.`,
+};
+
+function selectTheme(btn, theme) {
+  document.querySelectorAll('.theme-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  askConseils(THEMES[theme]);
+}
+
+async function askConseils(questionOverride) {
+  const question=questionOverride||document.getElementById('conseilsInput').value.trim();
+  if (!question) return;
+  const loading=document.getElementById('conseilsLoading'), content=document.getElementById('conseilsContent');
+  loading.style.display='flex'; content.style.display='none';
+  const sensor=getSerreTHSensor();
+  const temp=sensor?getStat(sensor,'va_temperature'):null, hum=sensor?getStat(sensor,'va_humidity'):null;
+  const wt=getDeviceById(DEVICE_WATER_TIMER_ID);
+  const rhoneOn=wt?getStat(wt,'switch_2'):null;
+  let recoltesSummary='';
+  try { const rec=JSON.parse(localStorage.getItem('jardin_recoltes_v2')||'[]'); const byFam={}; rec.forEach(r=>{byFam[r.famille||'Autre']=(byFam[r.famille||'Autre']||0)+r.poids;}); recoltesSummary=Object.entries(byFam).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([f,p])=>f+': '+(p/1000).toFixed(1)+'kg').join(', '); } catch(e) {}
+  const today=new Date().toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'});
+  const month=new Date().getMonth()+1;
+  const season=month>=3&&month<=5?'printemps':month>=6&&month<=8?'été':month>=9&&month<=11?'automne':'hiver';
+  const sysPrompt=`Tu es un expert en maraîchage, permaculture et aquaponie. ${lieuContextPrompt()}Serre aquaponique MyFood City, bacs surélevés, potager pleine terre, arrosage Bas Rhône, arbres fruitiers variés. Date : ${today} (${season}). Temp serre : ${temp!==null?temp+'°C':'non dispo'}. Humidité : ${hum!==null?hum+'%':'non dispo'}. Arrosage : ${rhoneOn!==null?(rhoneOn?'actif':'inactif'):'inconnu'}. Récoltes : ${recoltesSummary||'non dispo'}. Réponds en français, sections avec titres HTML h3, balises span class conseils-tag tag-urgent/tag-semaine/tag-info. Max 400 mots.`;
+  try {
+    const r=await fetch('/api/conseils',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({system:sysPrompt,question})});
+    const txt=await r.text(); if (!txt.trim()) throw new Error('Réponse vide');
+    const data=JSON.parse(txt); if (!data.success) throw new Error(data.error||'Erreur inconnue');
+    const html=(data.text||'Aucune réponse.')
+      .replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\*(.*?)\*/g,'<em>$1</em>')
+      .replace(/^### (.*)/gm,'<h3 style="font-family:Fraunces,serif;font-size:.95rem;font-weight:300;font-style:italic;color:var(--accent);margin:12px 0 6px">$1</h3>')
+      .replace(/^## (.*)/gm,'<h3 style="font-family:Fraunces,serif;font-size:1rem;font-weight:300;font-style:italic;color:var(--accent);margin:14px 0 6px">$1</h3>')
+      .replace(/^- (.*)/gm,'<div style="padding:3px 0 3px 12px;border-left:2px solid var(--teal-dark)">$1</div>')
+      .replace(/\n/g,'<br>');
+    content.innerHTML='<div style="padding:20px;font-size:.83rem;line-height:1.8;color:var(--text-dim)">'+html+'</div>';
+    if (!questionOverride) document.getElementById('conseilsInput').value='';
+  } catch(e) {
+    const surcharge=e.message?.includes('503')||e.message?.includes('UNAVAILABLE');
+    if (surcharge) { content.innerHTML='<div style="padding:20px;color:var(--amber);font-size:.8rem">⏳ Gemini surchargé, nouvel essai dans 15s…</div>'; loading.style.display='none'; content.style.display='block'; setTimeout(()=>askConseils(questionOverride),15000); return; }
+    content.innerHTML='<div style="padding:20px;color:var(--red);font-size:.8rem">Erreur : '+e.message+'</div>';
+  }
+  loading.style.display='none'; content.style.display='block';
+}
+  
+// ── Scheduler programmes ──────────────────────────────────────
+const _progRunning = {}; // id → { offTimer, lastRepeat }
+
+function timeToMinutes(timeStr) {
+  if (!timeStr) return null;
+  const [h, m] = timeStr.split(':').map(Number);
+  return h * 60 + m;
+}
+
+async function runProgrammes() {
+  // Si le cache capteurs est vide (1er appel au démarrage), attendre refreshAll
+  if (_lastSensorValues.ts === 0) {
+    await refreshAll();
+  }
+
   const now = new Date();
-  const target = new Date();
-  target.setHours(22,0,0,0);
-  if(now >= target){ document.getElementById("countdown-txt").innerText="Dors bien 🌙"; return; }
-  const diff = Math.floor((target-now)/1000);
-  const h = Math.floor(diff/3600);
-  const m = Math.floor((diff%3600)/60);
-  const s = diff%60;
-  const txt = h>0 ? `${h}h ${String(m).padStart(2,'0')}min` : `${m}min ${String(s).padStart(2,'0')}s`;
-  document.getElementById("countdown-txt").innerText = txt;
-  const bar = document.getElementById("countdown-bar");
-  if(h===0 && m<30) bar.classList.add("urgent-time");
-  else bar.classList.remove("urgent-time");
-}
+  const nowMin = now.getHours() * 60 + now.getMinutes();
+  const todayDay = now.getDay();
+  const progs = loadProgrammes();
 
-/* ══ MODE NUIT (filtre bleu) ══ */
-function checkNightMode(){
-  const h = new Date().getHours();
-  document.body.classList.toggle("night-mode", h>=21);
-  document.getElementById("screen-warning").style.display = (h>=20 && h<22) ? "block" : "none";
-}
+  for (const p of progs) {
+    if (!p.actif) continue;
+    if (!p.days.includes(todayDay)) continue;
 
-/* ══ MODE URGENT ══ */
-function checkUrgentMode(){
-  const h = new Date().getHours();
-  const isUrgent = h>=21 && h<24;
-  document.body.classList.toggle("urgent-mode", isUrgent);
-  document.getElementById("urgent-banner").style.display = isUrgent ? "block" : "none";
-}
+    const startMin = timeToMinutes(p.time);
+    if (startMin === null) continue;
+    const endMin = p.endtime ? timeToMinutes(p.endtime) : null;
+    if (nowMin < startMin) continue;
+    if (endMin !== null && nowMin > endMin) continue;
 
-/* ══ OVERLAY 22H ══ */
-let overlayShown = false;
-function checkSleepOverlay(){
-  const h = new Date().getHours();
-  if(h===22 && !overlayShown){
-    overlayShown = true;
-    showSleepOverlay();
+    if (!checkConditions(p.conditions)) continue;
+
+    const state = _progRunning[p.id] || {};
+    if (p.repeatEvery > 0) {
+      const lastRun = state.lastRepeat || 0;
+      if (nowMin - lastRun < p.repeatEvery && lastRun !== 0) continue;
+    } else {
+      if (state.lastRepeat === nowMin) continue;
+    }
+
+    const dev = DEVICE_MAP[p.device];
+    if (!dev) continue;
+    const val = p.action === 'on';
+    try {
+      await controlDevice(dev.id, dev.code, val);
+      _progRunning[p.id] = { ..._progRunning[p.id], lastRepeat: nowMin };
+      if (val && p.duration > 0) {
+        if (state.offTimer) clearTimeout(state.offTimer);
+        const ms = p.durationUnit === 'sec' ? p.duration * 1000 : p.duration * 60 * 1000;
+        const offTimer = setTimeout(async () => {
+          await controlDevice(dev.id, dev.code, false);
+          updateCommandStates();
+        }, ms);
+        _progRunning[p.id].offTimer = offTimer;
+      }
+      updateCommandStates();
+    } catch(e) {
+      console.warn('Programme', p.id, 'erreur:', e.message);
+    }
   }
 }
-
-function showSleepOverlay(){
-  const overlay = document.getElementById("sleep-overlay");
-  overlay.classList.add("show");
-  startStars();
-}
-
-function closeOverlay(){
-  document.getElementById("sleep-overlay").classList.remove("show");
-}
-
-function startStars(){
-  const canvas = document.getElementById("starCanvas");
-  const ctx2 = canvas.getContext("2d");
-  canvas.width=window.innerWidth; canvas.height=window.innerHeight;
-  const stars = Array.from({length:120},()=>({
-    x:Math.random()*canvas.width,
-    y:Math.random()*-canvas.height,
-    speed:0.4+Math.random()*1.2,
-    r:0.5+Math.random()*1.5,
-    alpha:0.4+Math.random()*0.6
-  }));
-  function draw(){
-    ctx2.clearRect(0,0,canvas.width,canvas.height);
-    stars.forEach(s=>{
-      ctx2.beginPath();
-      ctx2.arc(s.x,s.y,s.r,0,Math.PI*2);
-      ctx2.fillStyle=`rgba(200,220,255,${s.alpha})`;
-      ctx2.fill();
-      s.y += s.speed;
-      if(s.y>canvas.height){ s.y=-5; s.x=Math.random()*canvas.width; }
-    });
-    if(document.getElementById("sleep-overlay").classList.contains("show"))
-      requestAnimationFrame(draw);
+// ── Init ──────────────────────────────────────────────────────
+renderProgrammes();
+initWebcam();
+refreshAll();
+  // Lancer le scheduler toutes les minutes
+runProgrammes();
+setInterval(runProgrammes, 60 * 1000);
+setInterval(refreshAll, 5*60*1000);
+setInterval(async()=>{
+  const sensor=getSerreTHSensor();
+  if (sensor) {
+    const temp=getStat(sensor,'va_temperature'), hum=getStat(sensor,'va_humidity');
+    if (temp!==null&&hum!==null) { addLocalPoint(temp,hum); loadAndRenderTemp(currentRangeTemp); loadAndRenderHum(currentRangeHum); }
   }
-  draw();
-}
-
-/* ══ TIMER GUITARE ══ */
-let timerT=300, timerInterval;
-function startTimer(){
-  clearInterval(timerInterval);
-  timerT=300;
-  timerInterval=setInterval(()=>{
-    const m=Math.floor(timerT/60), s=timerT%60;
-    document.getElementById("timer").innerText=String(m).padStart(2,'0')+":"+String(s).padStart(2,'0');
-    timerT--;
-    if(timerT<0){ clearInterval(timerInterval); if(navigator.vibrate) navigator.vibrate([100,50,100]); }
-  },1000);
-}
-
-/* ══ AVATAR ══ */
-function setAvatar(a){
-  document.getElementById("avatar").innerText=a;
-  save(AVATAR_KEY,a);
-}
-
-/* ══ RÈGLES JOURS ══ */
-function applyDayRules(){
-  if(DAY===4) document.getElementById("guitareCard").style.display="none";
-  if(DAY===5) document.getElementById("devoirsCard").style.display="none";
-  if(DAY===5||DAY===6) document.getElementById("sacCard").style.display="none";
-  // Gouttière : toute la semaine exceptionnellement (pas de masquage)
-}
-
-/* ══ TÂCHES PERMANENTES ══ */
-let permTasks = load(PERM_KEY) || [];
-
-function renderPermCards(){
-  const container = document.getElementById("perm-cards-container");
-  if(!container){ return; }
-  container.innerHTML = "";
-  if(!permTasks || permTasks.length === 0) return;
-
-  const sorted = permTasks
-    .map((t,i) => ({...t, origIdx:i}))
-    .sort((a,b) => (a.time||"99:99").localeCompare(b.time||"99:99"));
-
-  sorted.forEach(task => {
-    const heure = task.time ? parseInt(task.time.split(":")[0]) : 20;
-    const card = document.createElement("div");
-    card.className = "card perm-card";
-    card.dataset.start = heure;
-    card.dataset.end   = heure + 1;
-    const label = task.label || "";
-    const timeLabel = task.time ? task.time + " — " : "";
-    card.innerHTML =
-      `<div class="card-title">${timeLabel}${label}</div>` +
-      `<div class="step"><input type="checkbox" data-key="perm_${task.origIdx}" onchange="onCheck(this)"> ${label}</div>`;
-    container.appendChild(card);
-  });
-
-  restoreState();
-}
-
-/* ══ PANNEAU SETTINGS ══ */
-let permTasksDraft = [];
-let settingsOpen = false;
-
-function openSettings(){
-  permTasksDraft = permTasks.map(t => ({...t}));
-  renderSettingsList();
-  document.getElementById("settings-panel").classList.add("open");
-  document.getElementById("settings-btn").classList.add("open");
-  settingsOpen = true;
-}
-
-function closeSettings(){
-  document.getElementById("settings-panel").classList.remove("open");
-  document.getElementById("settings-btn").classList.remove("open");
-  settingsOpen = false;
-}
-
-function toggleSettings(){
-  settingsOpen ? closeSettings() : openSettings();
-}
-
-function renderSettingsList(){
-  const list = document.getElementById("perm-list");
-  list.innerHTML = "";
-  if(!permTasksDraft.length){
-    list.innerHTML = "<div style='color:var(--muted);font-size:13px;padding:6px 0'>Aucune action permanente pour l'instant.</div>";
-    return;
-  }
-  // On travaille sur des copies indexées AVANT tri pour garder les index stables
-  permTasksDraft.forEach((task, i) => {
-    const row = document.createElement("div");
-    row.className = "perm-row";
-    row.innerHTML =
-      `<input type="time" value="${task.time||""}" oninput="permTasksDraft[${i}].time=this.value">` +
-      `<input type="text" value="${task.label||""}" oninput="permTasksDraft[${i}].label=this.value">` +
-      `<button class="del-btn" onclick="permTasksDraft.splice(${i},1);renderSettingsList()">🗑</button>`;
-    list.appendChild(row);
-  });
-}
-
-function addPermTask(){
-  const t = document.getElementById("perm-new-time").value;
-  const l = document.getElementById("perm-new-label").value.trim();
-  if(!l) return;
-  permTasksDraft.push({ time: t, label: l });
-  document.getElementById("perm-new-time").value = "";
-  document.getElementById("perm-new-label").value = "";
-  renderSettingsList();
-}
-
-function saveAndCloseSettings(){
-  permTasks = permTasksDraft.map(t => ({...t}));
-  save(PERM_KEY, permTasks);
-  closeSettings();
-  renderPermCards();
-  update();
-  scheduleCustomNotifications();
-}
-
-
-/* ══ TICK GLOBAL ══ */
-function tick(){
-  updateCountdown();
-  highlightCurrentStep();
-  checkNightMode();
-  checkUrgentMode();
-  checkSleepOverlay();
-  checkNotifications();
-}
-
-/* ══ INIT ══ */
-(function init(){
-  resetIfNewDay();
-  applyDayRules();
-  generateAppIcon();
-  const savedAvatar = load(AVATAR_KEY);
-  if(savedAvatar) document.getElementById("avatar").innerText = savedAvatar;
-  renderCustomTasks();
-  renderPermCards();
-  restoreState();
-  renderStats();
-  checkBadges();
-  update();
-  tick();
-  setInterval(tick, 10000);
-  setupServiceWorker().then(() => requestNotifPermission());
-})();
+}, 30*60*1000);
 </script>
 </body>
 </html>
