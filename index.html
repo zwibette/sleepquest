@@ -1257,13 +1257,21 @@ function renderSettingsList(){
   permTasksDraft.forEach((task, i) => {
     const row = document.createElement("div");
     row.className = "perm-row";
-    row.setAttribute("data-idx", i);
     row.innerHTML =
-      `<input type="time" class="perm-time" value="${task.time||""}">` +
-      `<input type="text" class="perm-label" value="${task.label||""}">` +
-      `<button class="del-btn" onclick="permTasksDraft.splice(${i},1);renderSettingsList()">🗑</button>`;
+      `<input type="time" value="${task.time||""}">` +
+      `<input type="text" value="${task.label||""}">` +
+      `<button class="del-btn" onclick="deletePermTask(${i})">🗑</button>`;
+    // Stocker les valeurs en JS à chaque frappe, sans lire le DOM plus tard
+    const inputs = row.querySelectorAll("input");
+    inputs[0].addEventListener("change", function(){ permTasksDraft[i].time  = this.value; });
+    inputs[1].addEventListener("change", function(){ permTasksDraft[i].label = this.value; });
     list.appendChild(row);
   });
+}
+
+function deletePermTask(i){
+  permTasksDraft.splice(i, 1);
+  renderSettingsList();
 }
 
 function addPermTask(){
@@ -1277,15 +1285,7 @@ function addPermTask(){
 }
 
 function saveAndCloseSettings(){
-  // Lire les valeurs directement depuis le DOM au moment de sauvegarder
-  const rows = document.querySelectorAll("#perm-list .perm-row");
-  permTasks = [];
-  rows.forEach(row => {
-    const t = row.querySelector(".perm-time").value;
-    const l = row.querySelector(".perm-label").value.trim();
-    if(l) permTasks.push({ time: t, label: l });
-  });
-  // Ajouter aussi ce qui est dans permTasksDraft mais pas encore rendu (ajouts récents)
+  permTasks = permTasksDraft.map(t => ({...t}));
   save(PERM_KEY, permTasks);
   window.location.reload();
 }
