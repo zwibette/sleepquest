@@ -1197,24 +1197,25 @@ let permTasks = load(PERM_KEY) || [];
 
 function renderPermCards(){
   const container = document.getElementById("perm-cards-container");
+  if(!container){ return; }
   container.innerHTML = "";
-  if(permTasks.length === 0) return;
+  if(!permTasks || permTasks.length === 0) return;
 
-  const sorted = [...permTasks]
-    .map((t,i)=>({...t, origIdx:i}))
-    .sort((a,b)=>(a.time||"99:99").localeCompare(b.time||"99:99"));
+  const sorted = permTasks
+    .map((t,i) => ({...t, origIdx:i}))
+    .sort((a,b) => (a.time||"99:99").localeCompare(b.time||"99:99"));
 
-  sorted.forEach((task, sortedIdx)=>{
+  sorted.forEach(task => {
     const heure = task.time ? parseInt(task.time.split(":")[0]) : 20;
     const card = document.createElement("div");
     card.className = "card perm-card";
     card.dataset.start = heure;
     card.dataset.end   = heure + 1;
-    card.innerHTML = `
-      <div class="card-title">${task.time ? task.time + " — " : ""}${task.label}</div>
-      <div class="step">
-        <input type="checkbox" data-key="perm_${task.origIdx}" onchange="onCheck(this)"> ${task.label}
-      </div>`;
+    const label = task.label || "";
+    const timeLabel = task.time ? task.time + " — " : "";
+    card.innerHTML =
+      `<div class="card-title">${timeLabel}${label}</div>` +
+      `<div class="step"><input type="checkbox" data-key="perm_${task.origIdx}" onchange="onCheck(this)"> ${label}</div>`;
     container.appendChild(card);
   });
 
@@ -1222,37 +1223,42 @@ function renderPermCards(){
 }
 
 /* ══ PANNEAU SETTINGS ══ */
-let permTasksDraft = []; // copie de travail pendant l'édition
+let permTasksDraft = [];
+let settingsOpen = false;
+
+function openSettings(){
+  permTasksDraft = permTasks.map(t => ({...t}));
+  renderSettingsList();
+  document.getElementById("settings-panel").classList.add("open");
+  document.getElementById("settings-btn").classList.add("open");
+  settingsOpen = true;
+}
+
+function closeSettings(){
+  document.getElementById("settings-panel").classList.remove("open");
+  document.getElementById("settings-btn").classList.remove("open");
+  settingsOpen = false;
+}
 
 function toggleSettings(){
-  const btn   = document.getElementById("settings-btn");
-  const panel = document.getElementById("settings-panel");
-  const isOpen = panel.classList.contains("open");
-  if(isOpen){
-    panel.classList.remove("open");
-    btn.classList.remove("open");
-  } else {
-    permTasksDraft = permTasks.map(t=>({...t}));
-    renderSettingsList();
-    panel.classList.add("open");
-    btn.classList.add("open");
-  }
+  settingsOpen ? closeSettings() : openSettings();
 }
 
 function renderSettingsList(){
   const list = document.getElementById("perm-list");
-  list.innerHTML="";
-  const sorted = permTasksDraft
-    .map((t,i)=>({...t, origIdx:i}))
-    .sort((a,b)=>(a.time||"99:99").localeCompare(b.time||"99:99"));
-  sorted.forEach(task=>{
-    const i = task.origIdx;
+  list.innerHTML = "";
+  if(!permTasksDraft.length){
+    list.innerHTML = "<div style='color:var(--muted);font-size:13px;padding:6px 0'>Aucune action permanente pour l'instant.</div>";
+    return;
+  }
+  // On travaille sur des copies indexées AVANT tri pour garder les index stables
+  permTasksDraft.forEach((task, i) => {
     const row = document.createElement("div");
-    row.className="perm-row";
-    row.innerHTML=`
-      <input type="time" value="${task.time||""}" onchange="permTasksDraft[${i}].time=this.value">
-      <input type="text" value="${task.label}" onchange="permTasksDraft[${i}].label=this.value">
-      <button class="del-btn" onclick="permTasksDraft.splice(${i},1);renderSettingsList()">✕</button>`;
+    row.className = "perm-row";
+    row.innerHTML =
+      `<input type="time" value="${task.time||""}" oninput="permTasksDraft[${i}].time=this.value">` +
+      `<input type="text" value="${task.label||""}" oninput="permTasksDraft[${i}].label=this.value">` +
+      `<button class="del-btn" onclick="permTasksDraft.splice(${i},1);renderSettingsList()">🗑</button>`;
     list.appendChild(row);
   });
 }
@@ -1261,20 +1267,21 @@ function addPermTask(){
   const t = document.getElementById("perm-new-time").value;
   const l = document.getElementById("perm-new-label").value.trim();
   if(!l) return;
-  permTasksDraft.push({ time:t, label:l });
-  document.getElementById("perm-new-time").value="";
-  document.getElementById("perm-new-label").value="";
+  permTasksDraft.push({ time: t, label: l });
+  document.getElementById("perm-new-time").value = "";
+  document.getElementById("perm-new-label").value = "";
   renderSettingsList();
 }
 
 function saveAndCloseSettings(){
-  permTasks = permTasksDraft.map(t=>({...t}));
+  permTasks = permTasksDraft.map(t => ({...t}));
   save(PERM_KEY, permTasks);
+  closeSettings();
   renderPermCards();
-  scheduleCustomNotifications(); // reprogrammer les notifs si des heures ont changé
-  toggleSettings();
   update();
+  scheduleCustomNotifications();
 }
+
 
 /* ══ TICK GLOBAL ══ */
 function tick(){
