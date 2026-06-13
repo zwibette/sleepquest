@@ -1448,9 +1448,8 @@ function tick(){
 /* ══ DÉFOULOIR SONORE ══ */
 function playPad(type){
   const btn = event.currentTarget;
-  btn.classList.remove("pop");
-  void btn.offsetWidth;
   btn.classList.add("pop");
+  setTimeout(() => btn.classList.remove("pop"), 350);
   if(navigator.vibrate) navigator.vibrate(30);
 
   const ac = new (window.AudioContext || window.webkitAudioContext)();
