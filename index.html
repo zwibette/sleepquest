@@ -516,6 +516,15 @@
 <!-- COUNTDOWN 22H -->
 <div id="countdown-bar">Objectif sommeil : <span id="countdown-txt">--:--</span></div>
 
+<!-- BOUTON ALARMES -->
+<div id="alarm-card" class="card" style="text-align:center;padding:10px 14px;">
+  <div style="font-size:12px;color:var(--muted);margin-bottom:8px;">⌚ Pour que le bracelet vibre à chaque action :</div>
+  <button onclick="openAlarmList()" style="background:linear-gradient(135deg,var(--purple),#5533aa);color:white;width:100%;padding:10px;font-size:14px;border-radius:10px;font-family:'Bangers',cursive;letter-spacing:1px;">
+    ⏰ Programmer les rappels du soir
+  </button>
+  <div id="alarm-links" style="display:none;margin-top:10px;text-align:left;"></div>
+</div>
+
 <!-- AVERTISSEMENT ÉCRANS -->
 <div id="screen-warning">📵 Après 20h, les écrans retardent ton endormissement. Pose le téléphone dès que tu peux !</div>
 
@@ -1001,6 +1010,58 @@ async function setupServiceWorker(){
 }
 
 function checkNotifications(){ /* géré par setTimeout */ }
+
+/* ══ ALARMES ANDROID ══ */
+// Toutes les alarmes fixes du soir
+const ALARM_LIST = [
+  { h:17, m:45, label:"📚 Devoirs" },
+  { h:18, m:0,  label:"🎒 Sac d'école" },
+  { h:18, m:20, label:"🎸 Guitare" },
+  { h:18, m:30, label:"🧹 Ranger chambre" },
+  { h:18, m:55, label:"🐹 Cochons d'Inde" },
+  { h:20, m:15, label:"💧 Routine respiration" },
+  { h:20, m:45, label:"🚿 Douche + dents + pyjama" },
+  { h:21, m:15, label:"📖 Lecture calme" },
+  { h:22, m:0,  label:"🌙 Dodo !" },
+];
+
+function openAlarmList(){
+  const div = document.getElementById("alarm-links");
+  div.style.display = "block";
+  div.innerHTML = "";
+
+  // Alarmes fixes
+  const allAlarms = [...ALARM_LIST];
+
+  // Ajouter les tâches perso avec heure
+  permTasks.forEach(t => {
+    if(!t.time) return;
+    const [h,m] = t.time.split(":").map(Number);
+    allAlarms.push({ h, m, label:"⏰ "+t.label });
+  });
+  customTasks.forEach(t => {
+    if(!t.time) return;
+    const [h,m] = t.time.split(":").map(Number);
+    allAlarms.push({ h, m, label:"⏰ "+t.label });
+  });
+
+  // Trier par heure
+  allAlarms.sort((a,b) => a.h*60+a.m - (b.h*60+b.m));
+
+  div.innerHTML = "<div style='font-size:11px;color:var(--muted);margin-bottom:8px;'>Appuie sur chaque rappel pour l'ouvrir dans l'Horloge :</div>";
+
+  allAlarms.forEach(alarm => {
+    const hh = String(alarm.h).padStart(2,"0");
+    const mm = String(alarm.m).padStart(2,"0");
+    // Intent Android pour ouvrir l'horloge avec l'heure pré-remplie
+    const uri = `intent://alarm?hour=${alarm.h}&minutes=${alarm.m}&message=${encodeURIComponent(alarm.label)}&skip_ui=false#Intent;scheme=android.clock;action=android.intent.action.SET_ALARM;package=com.google.android.deskclock;end`;
+    const btn = document.createElement("a");
+    btn.href = uri;
+    btn.style.cssText = "display:flex;align-items:center;gap:10px;background:#0d1228;border:1px solid #2a2f4a;border-radius:8px;padding:9px 12px;margin:5px 0;text-decoration:none;color:var(--text);font-size:13px;";
+    btn.innerHTML = `<span style="color:var(--cyan);font-family:'Bangers',cursive;font-size:16px;min-width:48px;">${hh}:${mm}</span><span>${alarm.label}</span>`;
+    div.appendChild(btn);
+  });
+}
 
 /* ══ ICÔNE APP (canvas) ══ */
 function generateAppIcon(){
