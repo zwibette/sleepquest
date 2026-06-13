@@ -1197,14 +1197,11 @@ let permTasks = load(PERM_KEY) || [];
 
 function renderPermCards(){
   const container = document.getElementById("perm-cards-container");
-  if(!container){ alert("ERREUR: perm-cards-container introuvable"); return; }
+  if(!container) return;
   container.innerHTML = "";
   const raw = localStorage.getItem(PERM_KEY);
-  if(!raw || raw === "[]" || raw === "null"){ 
-    container.innerHTML = "<div style='color:orange;padding:8px;font-size:12px'>DEBUG: permTasks vide — localStorage: "+raw+"</div>";
-    return; 
-  }
-  try { permTasks = JSON.parse(raw); } catch(e){ alert("JSON invalide: "+raw); return; }
+  if(!raw || raw === "[]" || raw === "null") return;
+  try { permTasks = JSON.parse(raw); } catch(e){ return; }
   if(!permTasks || permTasks.length === 0) return;
 
   const sorted = permTasks
@@ -1257,13 +1254,13 @@ function renderSettingsList(){
     list.innerHTML = "<div style='color:var(--muted);font-size:13px;padding:6px 0'>Aucune action permanente pour l'instant.</div>";
     return;
   }
-  // On travaille sur des copies indexées AVANT tri pour garder les index stables
   permTasksDraft.forEach((task, i) => {
     const row = document.createElement("div");
     row.className = "perm-row";
+    row.setAttribute("data-idx", i);
     row.innerHTML =
-      `<input type="time" value="${task.time||""}" oninput="permTasksDraft[${i}].time=this.value">` +
-      `<input type="text" value="${task.label||""}" oninput="permTasksDraft[${i}].label=this.value">` +
+      `<input type="time" class="perm-time" value="${task.time||""}">` +
+      `<input type="text" class="perm-label" value="${task.label||""}">` +
       `<button class="del-btn" onclick="permTasksDraft.splice(${i},1);renderSettingsList()">🗑</button>`;
     list.appendChild(row);
   });
@@ -1280,10 +1277,16 @@ function addPermTask(){
 }
 
 function saveAndCloseSettings(){
-  permTasks = permTasksDraft.map(t => ({...t}));
+  // Lire les valeurs directement depuis le DOM au moment de sauvegarder
+  const rows = document.querySelectorAll("#perm-list .perm-row");
+  permTasks = [];
+  rows.forEach(row => {
+    const t = row.querySelector(".perm-time").value;
+    const l = row.querySelector(".perm-label").value.trim();
+    if(l) permTasks.push({ time: t, label: l });
+  });
+  // Ajouter aussi ce qui est dans permTasksDraft mais pas encore rendu (ajouts récents)
   save(PERM_KEY, permTasks);
-  const check = localStorage.getItem(PERM_KEY);
-  alert("Sauvegardé: " + check);
   window.location.reload();
 }
 
