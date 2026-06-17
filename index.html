@@ -510,6 +510,39 @@
     border-radius:10px; border:none; cursor:pointer;
     font-family:'Bangers',cursive; letter-spacing:2px; font-size:1rem;
   }
+  /* Ligne action fixe dans settings */
+  .action-row{
+    display:flex; align-items:center; gap:8px;
+    margin:5px 0; background:#0d1228;
+    border-radius:8px; padding:7px 10px;
+    border:1px solid #1e2440;
+  }
+  .action-row.deleted{
+    opacity:0.35; filter:saturate(0);
+    border-color:#ff444444;
+  }
+  .action-row input[type=time]{
+    width:72px; background:#060a18; border:1px solid #2a2f4a;
+    border-radius:6px; color:var(--cyan); font-size:13px;
+    padding:4px 6px; outline:none; text-align:center;
+  }
+  .action-row input[type=text]{
+    flex:1; background:#060a18; border:1px solid #2a2f4a;
+    border-radius:6px; color:var(--text); font-size:13px;
+    padding:4px 8px; outline:none;
+  }
+  .action-row input:focus{ border-color:var(--cyan); }
+  .action-row .del-btn{
+    background:none; border:none; color:#ff6b6b;
+    font-size:16px; cursor:pointer; padding:2px 4px;
+    border-radius:4px; line-height:1; min-width:24px;
+  }
+  .action-row .del-btn:active{ background:#ff000022; }
+  .action-row .restore-btn{
+    background:none; border:none; color:var(--cyan);
+    font-size:14px; cursor:pointer; padding:2px 4px;
+    border-radius:4px; line-height:1; min-width:24px;
+  }
 
 
 </style>
@@ -526,8 +559,15 @@
   <div id="settings-inner">
     <div class="settings-title">⚙️ Réglages du planning</div>
 
+    <!-- LISTE DE TOUTES LES ACTIONS -->
     <div class="settings-section">
-      <div class="settings-section-title">Actions permanentes</div>
+      <div class="settings-section-title">📋 Toutes les actions du planning</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:10px;">Modifie l'heure ou le titre, ou supprime une action.</div>
+      <div id="all-actions-list"></div>
+    </div>
+
+    <div class="settings-section">
+      <div class="settings-section-title">➕ Actions permanentes (tes ajouts)</div>
       <div id="perm-list"></div>
       <div class="perm-add-row">
         <input type="time" id="perm-new-time" placeholder="heure">
@@ -651,9 +691,15 @@
 </div>
 
 <!-- ANIMAUX -->
-<div class="card" data-start="18" data-end="19" data-time="1135">
-  <div class="card-title">18h55 — Animaux</div>
+<div class="card" data-start="18" data-end="19" data-time="1130">
+  <div class="card-title">18h50 — Animaux</div>
   <div class="step"><input type="checkbox" data-key="cochons" onchange="onCheck(this)"> Je me suis occupé des cochons d'Inde</div>
+</div>
+
+<!-- SLENYTO -->
+<div class="card" data-start="18" data-end="19" data-time="1135">
+  <div class="card-title">18h55 — Traitement</div>
+  <div class="step"><input type="checkbox" data-key="slenyto" onchange="onCheck(this)"> Prendre le Slenyto 💊</div>
 </div>
 
 <!-- DÎNER -->
@@ -741,6 +787,7 @@ const RECORD_KEY    = "sq_record";
 const CUSTOM_KEY    = "sq_custom";
 const AVATAR_KEY    = "sq_avatar";
 const PERM_KEY      = "sq_perm_tasks";
+const FIXED_KEY     = "sq_fixed_overrides";
 
 /* ══ BADGES DÉFINIS ══ */
 const BADGES = [
@@ -1373,8 +1420,97 @@ function renderPermCards(){
 let permTasksDraft = [];
 let settingsOpen = false;
 
+/* Collecte toutes les cartes fixes du DOM avec leur heure et titre */
+function collectFixedActions(){
+  const cards = Array.from(document.querySelectorAll(".card[data-time]:not(.perm-card):not(.custom-card)"));
+  return cards
+    .filter(c => c.id !== "guide-card" && c.id !== "alarm-card" && c.id !== "customCard" && c.id !== "soundpad-card" && !c.closest("#settings-panel"))
+    .map(c => {
+      const titleEl = c.querySelector(".card-title");
+      const fullTitle = titleEl ? titleEl.innerText.replace(" ← maintenant","").trim() : "";
+      // Extraire heure et label
+      const match = fullTitle.match(/^(\d{1,2}[h:]\d{2}(?:[–-]\d{1,2}[h:]\d{2})?)[\s—–-]+(.+)$/);
+      return {
+        id: c.id || "",
+        dataTime: c.dataset.time,
+        origTitle: fullTitle,
+        time: match ? match[1] : "",
+        label: match ? match[2] : fullTitle,
+        card: c
+      };
+    })
+    .sort((a,b) => parseInt(a.dataTime||0) - parseInt(b.dataTime||0));
+}
+
+let fixedOverrides = load(FIXED_KEY) || {};   // { dataTime: { time, label, deleted } }
+let fixedDraft = {};
+
+function renderAllActionsList(){
+  const list = document.getElementById("all-actions-list");
+  list.innerHTML = "";
+  const actions = collectFixedActions();
+  fixedDraft = {};
+  actions.forEach(action => {
+    const key = action.dataTime || action.origTitle;
+    const override = fixedOverrides[key] || {};
+    const isDeleted = override.deleted || false;
+    const currentTime  = override.time  !== undefined ? override.time  : action.time;
+    const currentLabel = override.label !== undefined ? override.label : action.label;
+    fixedDraft[key] = { time: currentTime, label: currentLabel, deleted: isDeleted };
+
+    const row = document.createElement("div");
+    row.className = "action-row" + (isDeleted ? " deleted" : "");
+    row.dataset.key = key;
+
+    row.innerHTML =
+      `<input type="time" value="${currentTime.replace("h",":")}" ${isDeleted?"disabled":""}>` +
+      `<input type="text" value="${currentLabel}" ${isDeleted?"disabled":""}  maxlength="80">` +
+      (isDeleted
+        ? `<button class="restore-btn" onclick="restoreFixedAction('${key}')">↩</button>`
+        : `<button class="del-btn" onclick="deleteFixedAction('${key}')">🗑</button>`);
+
+    const inputs = row.querySelectorAll("input");
+    inputs[0].addEventListener("change", function(){ fixedDraft[key].time  = this.value.replace(":","h"); });
+    inputs[1].addEventListener("change", function(){ fixedDraft[key].label = this.value; });
+    list.appendChild(row);
+  });
+}
+
+function deleteFixedAction(key){
+  fixedDraft[key].deleted = true;
+  renderAllActionsList();
+}
+
+function restoreFixedAction(key){
+  fixedDraft[key].deleted = false;
+  renderAllActionsList();
+}
+
+function applyFixedOverrides(){
+  fixedOverrides = load(FIXED_KEY) || {};
+  const actions = collectFixedActions();
+  actions.forEach(action => {
+    const key = action.dataTime || action.origTitle;
+    const ov = fixedOverrides[key];
+    if(!ov) return;
+    if(ov.deleted){
+      action.card.style.display = "none";
+    } else {
+      if(ov.time || ov.label){
+        const titleEl = action.card.querySelector(".card-title");
+        if(titleEl){
+          const t = ov.time || action.time;
+          const l = ov.label || action.label;
+          titleEl.textContent = (t ? t + " — " : "") + l;
+        }
+      }
+    }
+  });
+}
+
 function openSettings(){
   permTasksDraft = permTasks.map(t => ({...t}));
+  renderAllActionsList();
   renderSettingsList();
   document.getElementById("settings-panel").classList.add("open");
   document.getElementById("settings-btn").classList.add("open");
@@ -1431,6 +1567,13 @@ function addPermTask(){
 function saveAndCloseSettings(){
   permTasks = permTasksDraft.map(t => ({...t}));
   save(PERM_KEY, permTasks);
+  // Sauver les overrides des actions fixes
+  fixedOverrides = {};
+  Object.entries(fixedDraft).forEach(([key, val]) => {
+    // Ne stocker que si modifié ou supprimé
+    if(val.deleted || val.time || val.label) fixedOverrides[key] = val;
+  });
+  save(FIXED_KEY, fixedOverrides);
   window.location.reload();
 }
 
@@ -1535,6 +1678,7 @@ function playPad(type){
   resetIfNewDay();
   applyDayRules();
   generateAppIcon();
+  applyFixedOverrides();
   const savedAvatar = load(AVATAR_KEY);
   if(savedAvatar) document.getElementById("avatar").innerText = savedAvatar;
   renderCustomTasks();
