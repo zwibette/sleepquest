@@ -519,33 +519,33 @@ const DEFAULT_CONFIG = {
       // startHour = heure à partir de laquelle ce bloc est "en cours"
       startHour: 6,
       tasks:[
-        {id:'m1', time:'7h15', name:'Je me lève', emoji:'🛏️', xp:10, enabled:true, days:[0,1,2,3,4,5,6]},
-        {id:'m2', time:'7h30', name:'Petit déjeuner au soleil', emoji:'🌅', xp:15, enabled:true, days:[0,1,2,3,4,5,6]},
-        {id:'m3', time:'7h50', name:'Je prends ma Ritaline', emoji:'💊', xp:20, enabled:true, days:[0,1,2,3,4,5,6]}
+        {id:'m1', time:'7h15', name:'Je me lève', emoji:'🛏️', xp:5, enabled:true, days:[0,1,2,3,4,5,6]},
+        {id:'m2', time:'7h30', name:'Petit déjeuner au soleil', emoji:'🌅', xp:7, enabled:true, days:[0,1,2,3,4,5,6]},
+        {id:'m3', time:'7h50', name:'Je prends ma Ritaline', emoji:'💊', xp:10, enabled:true, days:[0,1,2,3,4,5,6]}
       ]
     },
     {
       id:'afternoon', label:'Fin d\'après-midi', emoji:'📚', color:'afternoon', enabled:true,
       startHour: 17,
       tasks:[
-        {id:'a1', time:'17h45', name:'Devoirs faits', emoji:'✏️', xp:25, enabled:true, days:[1,2,3,4,5]},
-        {id:'a2', time:'18h00', name:'Sac d\'école prêt et descendu', emoji:'🎒', xp:15, enabled:true, days:[1,2,3,4,5]},
-        {id:'a3', time:'18h20', name:'Guitare', emoji:'🎸', xp:20, enabled:true, timer:300, days:[0,1,2,3,4,5,6]},
+        {id:'a1', time:'17h45', name:'Devoirs faits', emoji:'✏️', xp:12, enabled:true, days:[1,2,3,4,5]},
+        {id:'a2', time:'18h00', name:'Sac d\'école prêt et descendu', emoji:'🎒', xp:7, enabled:true, days:[1,2,3,4,5]},
+        {id:'a3', time:'18h20', name:'Guitare', emoji:'🎸', xp:10, enabled:true, timer:300, days:[0,1,2,3,4,5,6]},
         {
           id:'a4', time:'18h30', name:'Rangement', emoji:'🧹', xp:0, enabled:true,
           subTasks:[
-            {id:'a4a', name:'Je range ma chambre', emoji:'🛏️', xp:15, enabled:true, days:[0,1,2,3,4,5,6]},
-            {id:'a4b', name:'Je range mes affaires dans la maison', emoji:'🏠', xp:10, enabled:true, days:[0,1,2,3,4,5,6]}
+            {id:'a4a', name:'Je range ma chambre', emoji:'🛏️', xp:7, enabled:true, days:[0,1,2,3,4,5,6]},
+            {id:'a4b', name:'Je range mes affaires dans la maison', emoji:'🏠', xp:5, enabled:true, days:[0,1,2,3,4,5,6]}
           ]
         },
-        {id:'a5', time:'18h50', name:'Je m\'occupe des cochons d\'Inde', emoji:'🐹', xp:15, enabled:true, days:[0,1,2,3,4,5,6]}
+        {id:'a5', time:'18h50', name:'Je m\'occupe des cochons d\'Inde', emoji:'🐹', xp:7, enabled:true, days:[0,1,2,3,4,5,6]}
       ]
     },
     {
       id:'evening', label:'Début de soirée', emoji:'🌆', color:'evening', enabled:true,
       startHour: 19,
       tasks:[
-        {id:'e1', time:'19h15', name:'Slenyto', emoji:'💊', xp:25, enabled:true, days:[0,1,2,3,4,5,6]},
+        {id:'e1', time:'19h15', name:'Slenyto', emoji:'💊', xp:12, enabled:true, days:[0,1,2,3,4,5,6]},
         // Dîner + Discussion : groupe info non-cochable
         {id:'e_dinner', time:'19h15', name:'Dîner tranquille', emoji:'🍽️', xp:0, enabled:true, infoGroup:true,
           infoLines:[
@@ -556,9 +556,9 @@ const DEFAULT_CONFIG = {
         {
           id:'e4', time:'20h30', name:'Routine respiration', emoji:'🫧', xp:0, enabled:true,
           subTasks:[
-            {id:'e4a', name:'Lavage de nez', emoji:'💨', xp:10, enabled:true, days:[0,1,2,3,4,5,6]},
-            {id:'e4b', name:'Exercices de langue', emoji:'👅', xp:10, enabled:true, days:[0,1,2,3,4,5,6]},
-            {id:'e4c', name:'Spray nasal (20 min après)', emoji:'🌬️', xp:10, enabled:true, days:[0,1,2,3,4,5,6]}
+            {id:'e4a', name:'Lavage de nez', emoji:'💨', xp:5, enabled:true, days:[0,1,2,3,4,5,6]},
+            {id:'e4b', name:'Exercices de langue', emoji:'👅', xp:5, enabled:true, days:[0,1,2,3,4,5,6]},
+            {id:'e4c', name:'Spray nasal (20 min après)', emoji:'🌬️', xp:5, enabled:true, days:[0,1,2,3,4,5,6]}
           ]
         }
       ]
@@ -573,17 +573,17 @@ const DEFAULT_CONFIG = {
         {
           id:'n2', time:'21h45', name:'Routine du corps', emoji:'🧼', xp:0, enabled:true,
           subTasks:[
-            {id:'n2a', name:'Douche', emoji:'🚿', xp:15, enabled:true, days:[0,1,2,3,4,5,6]},
-            {id:'n2b', name:'Brossage de dents', emoji:'🦷', xp:15, enabled:true, days:[0,1,2,3,4,5,6]},
-            {id:'n2c', name:'Pyjama', emoji:'🩲', xp:10, enabled:true, days:[0,1,2,3,4,5,6]},
-            {id:'n2d', name:'Gouttière', emoji:'🦷', xp:10, enabled:true, days:[0,1,2,3,4,5,6]},
-            {id:'n2e', name:'Ranger serviette et vêtements', emoji:'🧺', xp:10, enabled:true, days:[0,1,2,3,4,5,6]}
+            {id:'n2a', name:'Douche', emoji:'🚿', xp:7, enabled:true, days:[0,1,2,3,4,5,6]},
+            {id:'n2b', name:'Brossage de dents', emoji:'🦷', xp:7, enabled:true, days:[0,1,2,3,4,5,6]},
+            {id:'n2c', name:'Pyjama', emoji:'🩲', xp:5, enabled:true, days:[0,1,2,3,4,5,6]},
+            {id:'n2d', name:'Gouttière', emoji:'🦷', xp:5, enabled:true, days:[0,1,2,3,4,5,6]},
+            {id:'n2e', name:'Ranger serviette et vêtements', emoji:'🧺', xp:5, enabled:true, days:[0,1,2,3,4,5,6]}
           ]
         },
-        {id:'n3', time:'22h15', name:'J\'écoute une bande sonore relaxante', emoji:'🎵', xp:10, enabled:true, days:[0,1,2,3,4,5,6]},
-        {id:'n4', time:'', name:'Je lis mon roman', emoji:'📖', xp:10, enabled:true, days:[0,1,2,3,4,5,6]},
-        {id:'n5', time:'23h05', name:'J\'écoute ma bande sonore de sommeil', emoji:'🌊', xp:15, enabled:true, days:[0,1,2,3,4,5,6]},
-        {id:'n6', time:'23h15', name:'Au dodo 💤', emoji:'💤', xp:30, enabled:true, isLast:true, days:[0,1,2,3,4,5,6]}
+        {id:'n3', time:'22h15', name:'J\'écoute une bande sonore relaxante', emoji:'🎵', xp:5, enabled:true, days:[0,1,2,3,4,5,6]},
+        {id:'n4', time:'', name:'Je lis mon roman', emoji:'📖', xp:5, enabled:true, days:[0,1,2,3,4,5,6]},
+        {id:'n5', time:'23h05', name:'J\'écoute ma bande sonore de sommeil', emoji:'🌊', xp:7, enabled:true, days:[0,1,2,3,4,5,6]},
+        {id:'n6', time:'23h15', name:'Au dodo 💤', emoji:'💤', xp:15, enabled:true, isLast:true, days:[0,1,2,3,4,5,6]}
       ]
     }
   ],
@@ -1021,16 +1021,22 @@ function renderLeafTask(task, hasTimer) {
 // ═══════════════════════════════════════════════════
 function toggleTask(id) {
   const done = todayState.done.includes(id);
+  const task = findTaskById(id);
   if(done){
+    // Décocher → retirer l'XP
     todayState.done = todayState.done.filter(x=>x!==id);
     delete todayState.timestamp[id];
+    if(task && task.xp > 0){
+      removeXP(task.xp, id);
+      todayState.xpEarned = Math.max(0, (todayState.xpEarned||0) - task.xp);
+      showToast(`-${task.xp} XP ${task.emoji}`);
+    }
   } else {
     todayState.done.push(id);
     todayState.timestamp[id] = new Date().toISOString();
-    const task = findTaskById(id);
-    if(task&&task.xp>0){
-      awardXP(task.xp,id);
-      todayState.xpEarned = (todayState.xpEarned||0)+task.xp;
+    if(task && task.xp > 0){
+      awardXP(task.xp, id);
+      todayState.xpEarned = (todayState.xpEarned||0) + task.xp;
       playTaskDone();
       showToast(`+${task.xp} XP ! ${task.emoji}`);
     }
@@ -1063,6 +1069,21 @@ function awardXP(amount, taskId) {
     popup.style.cssText=`left:${rect.left+rect.width/2-30}px;top:${rect.top+20}px`;
     document.body.appendChild(popup);
     setTimeout(()=>popup.remove(),1500);
+  }
+}
+
+function removeXP(amount, taskId) {
+  player.xp = Math.max(0, player.xp - amount);
+  DB.saveState(player);
+  const card = document.getElementById('card-'+taskId);
+  if(card){
+    const rect = card.getBoundingClientRect();
+    const popup = document.createElement('div');
+    popup.className = 'xp-popup';
+    popup.textContent = '-'+amount+' XP';
+    popup.style.cssText = `left:${rect.left+rect.width/2-30}px;top:${rect.top+20}px;color:#ff5252`;
+    document.body.appendChild(popup);
+    setTimeout(()=>popup.remove(), 1500);
   }
 }
 
