@@ -350,7 +350,7 @@
     background: rgba(255,255,255,0.06); border-radius: 6px;
     padding: 2px 6px; margin-top: 2px; display: inline-block;
   }
-  .task-card.not-today { opacity: 0.3; pointer-events: none; }
+
 
   .add-task-btn {
     margin: 8px 16px 12px;
@@ -839,30 +839,26 @@ function playSound(id) {
       });
 
     } else if (id === 'punch') {
-      // 👊 NOUVEAU : Coup de poing avec impact charnu
-      // Couche 1 : thud grave très court
-      const o = ctx.createOscillator(); const og = ctx.createGain();
-      o.type = 'sine';
-      o.frequency.setValueAtTime(180, now);
-      o.frequency.exponentialRampToValueAtTime(40, now + 0.08);
-      og.gain.setValueAtTime(1.0, now);
-      og.gain.exponentialRampToValueAtTime(0.0001, now + 0.12);
-      o.connect(og); og.connect(m); o.start(now); o.stop(now + 0.12);
-      // Couche 2 : smack — bruit filtré médium (impact de peau)
-      const smackBuf = ctx.createBuffer(1, Math.ceil(ctx.sampleRate * 0.06), ctx.sampleRate);
-      const sd = smackBuf.getChannelData(0);
-      for (let i = 0; i < sd.length; i++) sd[i] = (Math.random()*2-1) * Math.pow(1 - i/sd.length, 2);
-      const smackSrc = ctx.createBufferSource(); smackSrc.buffer = smackBuf;
-      const bp = ctx.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=900; bp.Q.value=1.5;
-      const sg = ctx.createGain(); sg.gain.value = 0.8;
-      smackSrc.connect(bp); bp.connect(sg); sg.connect(m); smackSrc.start(now);
-      // Couche 3 : clic d'attaque initial très bref
-      const clickBuf = ctx.createBuffer(1, Math.ceil(ctx.sampleRate * 0.008), ctx.sampleRate);
-      const cd = clickBuf.getChannelData(0);
-      for (let i = 0; i < cd.length; i++) cd[i] = (Math.random()*2-1);
-      const clickSrc = ctx.createBufferSource(); clickSrc.buffer = clickBuf;
-      const cg = ctx.createGain(); cg.gain.value = 1.5;
-      clickSrc.connect(cg); cg.connect(m); clickSrc.start(now);
+      // 🔔 NOUVEAU : Cloche magique (harmoniques FM + résonance longue)
+      const ctx2 = ac();
+      // Porteuse + modulante pour son métallique
+      const carrier = ctx2.createOscillator();
+      const modulator = ctx2.createOscillator();
+      const modGain = ctx2.createGain();
+      const g = ctx2.createGain();
+      carrier.type = 'sine'; carrier.frequency.value = 420;
+      modulator.type = 'sine'; modulator.frequency.value = 390;
+      modGain.gain.setValueAtTime(300, now);
+      modGain.gain.exponentialRampToValueAtTime(0.1, now + 0.8);
+      g.gain.setValueAtTime(0.4, now);
+      g.gain.exponentialRampToValueAtTime(0.0001, now + 1.2);
+      modulator.connect(modGain); modGain.connect(carrier.frequency);
+      carrier.connect(g); g.connect(m);
+      carrier.start(now); carrier.stop(now + 1.2);
+      modulator.start(now); modulator.stop(now + 1.2);
+      // Harmonique aiguë
+      osc('sine', 840, 0.6, 0.15, m, 0);
+      osc('sine', 1260, 0.3, 0.12, m, 0);
 
     } else if (id === 'eclair') {
       // Éclair : crack initial + fréquences hautes
@@ -1040,7 +1036,7 @@ function renderTask(task, block) {
     </div>`;
   }
 
-  // Tâche info simple (temps calme) — FIX #2 : plus de badge "Informatif"
+  // Tâche info simple (temps calme)
   if(task.info){
     return `<div class="info-card">
       <div class="info-card-row">
@@ -1052,23 +1048,28 @@ function renderTask(task, block) {
 
   // Tâche avec sous-tâches
   if(task.subTasks){
+    // Ne garder que les sous-tâches actives aujourd'hui
+    const activeSubs = task.subTasks.filter(st => st.enabled && isTaskActiveToday(st));
+    if(activeSubs.length === 0) return ''; // tout masqué aujourd'hui
     let html = `<div class="sub-block">
       <div class="sub-block-title">⏰ ${task.time?task.time+' — ':''}${task.name}</div>`;
-    for(const st of task.subTasks){ if(st.enabled) html+=renderLeafTask(st,false); }
+    for(const st of activeSubs){ html+=renderLeafTask(st,false); }
     html += `</div>`;
     if(task.timer) html = renderLeafTask(task,true)+html;
     return html;
   }
+
+  // Tâche simple : masquer complètement si pas active aujourd'hui
+  if(!isTaskActiveToday(task)) return '';
 
   return renderLeafTask(task, !!task.timer);
 }
 
 function renderLeafTask(task, hasTimer) {
   const done = todayState.done.includes(task.id);
-  const activeToday = isTaskActiveToday(task);
   const activeIds = getAllCheckableIds();
   const firstUndone = activeIds.find(id=>!todayState.done.includes(id));
-  const isActive = !done && task.id===firstUndone && activeToday;
+  const isActive = !done && task.id===firstUndone;
 
   const DAY_NAMES = ['D','L','M','M','J','V','S'];
   const daysHtml = (task.days && task.days.length < 7)
@@ -1086,9 +1087,7 @@ function renderLeafTask(task, hasTimer) {
     ? `<button class="task-btn" onclick="startTimer('${task.id}',${task.timer},event)">⏱ ${Math.floor(task.timer/60)}min</button>`
     : '';
 
-  const notTodayClass = !activeToday ? ' not-today' : '';
-
-  return `<div class="task-card${done?' done':''}${isActive?' active-task':''}${notTodayClass}" id="card-${task.id}" onclick="${activeToday?`toggleTask('${task.id}')`:'' }">
+  return `<div class="task-card${done?' done':''}${isActive?' active-task':''}" id="card-${task.id}" onclick="toggleTask('${task.id}')">
     <div class="task-checkbox">${done?'✓':''}</div>
     <span class="task-emoji">${task.emoji}</span>
     <div class="task-info">
@@ -1281,7 +1280,6 @@ function renderSoundBar(){
 }
 function soundBtnAnim(el, id){
   playSound(id);
-  if(navigator.vibrate) navigator.vibrate(30);
   el.classList.add('pop');
   setTimeout(()=>el.classList.remove('pop'), 350);
 }
@@ -1345,9 +1343,12 @@ function renderSettings(){
         <div class="settings-label" style="min-width:100px;">
           <input type="text" value="${task.name}" style="width:100%;font-size:13px;"
             onchange="setTaskName('${block.id}','${task.id}',this.value)">
-          <div style="display:flex;gap:4px;margin-top:4px;">
+          <div style="display:flex;gap:6px;align-items:center;margin-top:4px;">
             <input type="time" value="${task.time?task.time.replace('h',':').padStart(5,'0'):''}" style="width:85px;"
               onchange="setTaskTime('${block.id}','${task.id}',this.value)">
+            <span style="font-size:11px;color:var(--text-dim);white-space:nowrap;">⭐ XP</span>
+            <input type="number" value="${task.xp||0}" min="0" max="999" style="width:55px;"
+              onchange="setTaskXP('${block.id}','${task.id}',this.value)">
           </div>
           <div class="days-row">${daysChips}</div>
         </div>
@@ -1465,7 +1466,15 @@ function renderSettings(){
 
 // ─── Helpers settings ───
 function setTaskName(blockId,taskId,val){const b=config.blocks.find(x=>x.id===blockId);if(!b)return;const t=b.tasks.find(x=>x.id===taskId);if(t)t.name=val;}
-function setTaskTime(blockId,taskId,val){const b=config.blocks.find(x=>x.id===blockId);if(!b)return;const t=b.tasks.find(x=>x.id===taskId);if(t)t.time=val.replace(':','h');}
+function setTaskXP(blockId,taskId,val){const b=config.blocks.find(x=>x.id===blockId);if(!b)return;const t=b.tasks.find(x=>x.id===taskId);if(t)t.xp=Math.floor(parseInt(val)||0);}
+function setTaskTime(blockId,taskId,val){
+  const b=config.blocks.find(x=>x.id===blockId);if(!b)return;
+  const t=b.tasks.find(x=>x.id===taskId);if(!t)return;
+  t.time=val.replace(':','h');
+  function timeToMin(task){const s=task.time||'';if(!s)return 9999;const p=s.replace('h',':').split(':');return parseInt(p[0])*60+(parseInt(p[1])||0);}
+  b.tasks.sort((a,c)=>timeToMin(a)-timeToMin(c));
+  renderSettings();
+}
 function setTaskEnabled(blockId,taskId,val){const b=config.blocks.find(x=>x.id===blockId);if(!b)return;const t=b.tasks.find(x=>x.id===taskId);if(t)t.enabled=val;}
 function setSubTaskName(blockId,taskId,stId,val){const b=config.blocks.find(x=>x.id===blockId);if(!b)return;const t=b.tasks.find(x=>x.id===taskId);if(!t||!t.subTasks)return;const s=t.subTasks.find(x=>x.id===stId);if(s)s.name=val;}
 function setSubTaskXP(blockId,taskId,stId,val){const b=config.blocks.find(x=>x.id===blockId);if(!b)return;const t=b.tasks.find(x=>x.id===taskId);if(!t||!t.subTasks)return;const s=t.subTasks.find(x=>x.id===stId);if(s)s.xp=parseInt(val)||0;}
@@ -1495,7 +1504,16 @@ function toggleSubTaskDay(blockId,taskId,stId,dayIdx,chipEl){
 function addTask(blockId){
   const b=config.blocks.find(x=>x.id===blockId);if(!b)return;
   const newId='t_'+Date.now();
-  b.tasks.push({id:newId,time:'',name:'Nouvelle tâche',emoji:'✨',xp:10,enabled:true});
+  const newTask={id:newId,time:'',name:'Nouvelle tâche',emoji:'✨',xp:5,enabled:true,days:[0,1,2,3,4,5,6]};
+  // Insérer en ordre chronologique
+  function timeToMin(t){
+    if(!t) return 9999;
+    const parts=t.replace('h',':').split(':');
+    return parseInt(parts[0])*60+(parseInt(parts[1])||0);
+  }
+  const idx = b.tasks.findIndex(t => timeToMin(t.time) > timeToMin(newTask.time));
+  if(idx === -1) b.tasks.push(newTask);
+  else b.tasks.splice(idx, 0, newTask);
   renderSettings();
 }
 function deleteTask(blockId,taskId){
