@@ -1396,6 +1396,7 @@ function renderSettings(){
               <button class="move-btn" title="Monter" onclick="moveSubTask('${block.id}','${task.id}','${st.id}',-1)">▲</button>
               <button class="move-btn" title="Descendre" onclick="moveSubTask('${block.id}','${task.id}','${st.id}',1)">▼</button>
             </div>
+          </div>`;
         });
         // Bouton pour ajouter une sous-tâche dans ce bloc
         html+=`<button class="add-task-btn" style="margin-left:28px;width:calc(100% - 60px);font-size:13px;padding:6px 12px;margin-top:0;margin-bottom:6px;border-color:rgba(168,85,247,0.5);"
@@ -1523,6 +1524,7 @@ function moveSubTask(blockId,taskId,stId,dir){
   [t.subTasks[idx],t.subTasks[newIdx]]=[t.subTasks[newIdx],t.subTasks[idx]];
   renderSettings();
 }
+function addTask(blockId){
   const b=config.blocks.find(x=>x.id===blockId);if(!b)return;
   const newId='t_'+Date.now();
   b.tasks.push({id:newId,time:'',name:'Nouvelle tâche',emoji:'✨',xp:10,enabled:true,days:[0,1,2,3,4,5,6]});
