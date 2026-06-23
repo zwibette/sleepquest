@@ -1052,9 +1052,11 @@ function renderTask(task, block) {
 
   // Tâche avec sous-tâches
   if(task.subTasks){
+    const visibleSubs = task.subTasks.filter(st=>st.enabled && isTaskActiveToday(st));
+    if(visibleSubs.length === 0) return ''; // bloc vide = on n'affiche rien
     let html = `<div class="sub-block">
       <div class="sub-block-title">⏰ ${task.time?task.time+' — ':''}${task.name}</div>`;
-    for(const st of task.subTasks){ if(st.enabled) html+=renderLeafTask(st,false); }
+    for(const st of visibleSubs){ html+=renderLeafTask(st,false); }
     html += `</div>`;
     if(task.timer) html = renderLeafTask(task,true)+html;
     return html;
@@ -1066,6 +1068,7 @@ function renderTask(task, block) {
 function renderLeafTask(task, hasTimer) {
   const done = todayState.done.includes(task.id);
   const activeToday = isTaskActiveToday(task);
+  if(!activeToday) return ''; // masquer complètement si pas pour aujourd'hui
   const activeIds = getAllCheckableIds();
   const firstUndone = activeIds.find(id=>!todayState.done.includes(id));
   const isActive = !done && task.id===firstUndone && activeToday;
@@ -1086,9 +1089,9 @@ function renderLeafTask(task, hasTimer) {
     ? `<button class="task-btn" onclick="startTimer('${task.id}',${task.timer},event)">⏱ ${Math.floor(task.timer/60)}min</button>`
     : '';
 
-  const notTodayClass = !activeToday ? ' not-today' : '';
+  const notTodayClass = '';
 
-  return `<div class="task-card${done?' done':''}${isActive?' active-task':''}${notTodayClass}" id="card-${task.id}" onclick="${activeToday?`toggleTask('${task.id}')`:'' }">
+  return `<div class="task-card${done?' done':''}${isActive?' active-task':''}" id="card-${task.id}" onclick="toggleTask('${task.id}')">
     <div class="task-checkbox">${done?'✓':''}</div>
     <span class="task-emoji">${task.emoji}</span>
     <div class="task-info">
@@ -1389,7 +1392,10 @@ function renderSettings(){
               <span class="toggle-slider"></span>
             </label>
             <button class="delete-btn" onclick="deleteSubTask('${block.id}','${task.id}','${st.id}')">🗑</button>
-          </div>`;
+            <div style="display:flex;gap:2px;">
+              <button class="move-btn" title="Monter" onclick="moveSubTask('${block.id}','${task.id}','${st.id}',-1)">▲</button>
+              <button class="move-btn" title="Descendre" onclick="moveSubTask('${block.id}','${task.id}','${st.id}',1)">▼</button>
+            </div>
         });
         // Bouton pour ajouter une sous-tâche dans ce bloc
         html+=`<button class="add-task-btn" style="margin-left:28px;width:calc(100% - 60px);font-size:13px;padding:6px 12px;margin-top:0;margin-bottom:6px;border-color:rgba(168,85,247,0.5);"
@@ -1508,7 +1514,15 @@ function toggleSubTaskDay(blockId,taskId,stId,dayIdx,chipEl){
   chipEl.classList.toggle('active', s.days.includes(dayIdx));
 }
 
-function addTask(blockId){
+function moveSubTask(blockId,taskId,stId,dir){
+  const b=config.blocks.find(x=>x.id===blockId);if(!b)return;
+  const t=b.tasks.find(x=>x.id===taskId);if(!t||!t.subTasks)return;
+  const idx=t.subTasks.findIndex(s=>s.id===stId);
+  const newIdx=idx+dir;
+  if(newIdx<0||newIdx>=t.subTasks.length)return;
+  [t.subTasks[idx],t.subTasks[newIdx]]=[t.subTasks[newIdx],t.subTasks[idx]];
+  renderSettings();
+}
   const b=config.blocks.find(x=>x.id===blockId);if(!b)return;
   const newId='t_'+Date.now();
   b.tasks.push({id:newId,time:'',name:'Nouvelle tâche',emoji:'✨',xp:10,enabled:true,days:[0,1,2,3,4,5,6]});
